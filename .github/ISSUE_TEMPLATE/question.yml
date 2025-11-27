@@ -1,0 +1,42 @@
+name: Question
+description: Ask a question about using the language server
+title: "[Question]: "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have a question? We're happy to help!
+        
+        Before asking, please check:
+        - [README](https://github.com/your-username/typescript-language-server#readme)
+        - [Existing issues](https://github.com/your-username/typescript-language-server/issues?q=is%3Aissue)
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: What would you like to know?
+      placeholder: "How do I..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Any additional context that might help us answer your question.
+      placeholder: "I'm trying to..."
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - Installation / Setup
+        - Configuration
+        - Usage
+        - Integration with Editor
+        - Performance
+        - Other
+

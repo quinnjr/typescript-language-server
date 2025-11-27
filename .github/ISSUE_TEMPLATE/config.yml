@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Discussions
+    url: https://github.com/your-username/typescript-language-server/discussions
+    about: Ask questions and discuss ideas in GitHub Discussions
+  - name: Documentation
+    url: https://github.com/your-username/typescript-language-server#readme
+    about: Read the documentation before opening an issue
+
