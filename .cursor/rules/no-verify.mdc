@@ -1,0 +1,73 @@
+---
+description: Never bypass git hooks with --no-verify
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+# Git Hooks Policy
+
+**NEVER use `--no-verify` flag with git commands.**
+
+## Prohibited Commands
+
+The following patterns are strictly forbidden:
+
+```bash
+# Never do these
+git commit --no-verify
+git commit -n
+git push --no-verify
+git merge --no-verify
+git rebase --no-verify
+git cherry-pick --no-verify
+```
+
+## Why?
+
+This project uses git hooks to enforce:
+- Conventional commit message format
+- Git-flow branch naming
+- Code formatting checks
+- Protected branch rules
+
+Bypassing these hooks defeats the purpose of having them and can lead to:
+- Inconsistent commit history
+- Broken CI/CD pipelines
+- Merges to wrong branches
+- Unformatted code in the repository
+
+## If Hooks Fail
+
+Instead of bypassing hooks:
+
+1. **Commit message rejected?** → Fix the message format
+   ```bash
+   # Use conventional commits format
+   git commit -m "feat(parser): add JSX support"
+   ```
+
+2. **Branch naming rejected?** → Rename your branch
+   ```bash
+   git branch -m old-name feature/new-name
+   ```
+
+3. **Format check failed?** → Run the formatter
+   ```bash
+   cargo fmt
+   ```
+
+4. **Push to protected branch rejected?** → Create a PR instead
+   ```bash
+   git checkout -b feature/my-changes
+   git push -u origin feature/my-changes
+   # Then create a pull request
+   ```
+
+## Installing Hooks
+
+If hooks aren't working, install them:
+
+```bash
+./.githooks/install.sh
+```
