@@ -4,12 +4,25 @@
   "description": "A TypeScript and JavaScript language server implemented in Rust",
   "version": "0.1.0",
   "publisher": "typescript-lsp-rust",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/typescript-language-server"
+  },
   "type": "module",
   "engines": {
     "vscode": "^1.75.0"
   },
   "categories": [
-    "Programming Languages"
+    "Programming Languages",
+    "Linters"
+  ],
+  "keywords": [
+    "typescript",
+    "javascript",
+    "lsp",
+    "language-server",
+    "rust"
   ],
   "activationEvents": [
     "onLanguage:typescript",
@@ -17,12 +30,17 @@
     "onLanguage:javascript",
     "onLanguage:javascriptreact"
   ],
-  "main": "./out/extension.mjs",
+  "main": "./dist/extension.js",
   "contributes": {
     "configuration": {
       "type": "object",
       "title": "TypeScript/JavaScript LSP (Rust)",
       "properties": {
+        "tsLspRust.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable the TypeScript/JavaScript language server."
+        },
         "tsLspRust.serverPath": {
           "type": "string",
           "default": "",
@@ -39,16 +57,30 @@
           "description": "Traces the communication between VS Code and the language server."
         }
       }
-    }
+    },
+    "commands": [
+      {
+        "command": "tsLspRust.restartServer",
+        "title": "Restart Language Server",
+        "category": "TypeScript LSP (Rust)"
+      }
+    ]
   },
   "scripts": {
-    "vscode:prepublish": "pnpm run compile",
-    "compile": "tsc -p ./",
+    "vscode:prepublish": "pnpm run build",
+    "build": "pnpm run check && pnpm run bundle",
+    "bundle": "esbuild src/extension.mts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node --target=node18 --sourcemap",
+    "bundle:watch": "pnpm run bundle --watch",
+    "check": "tsc --noEmit",
     "watch": "tsc -watch -p ./",
-    "package": "vsce package --no-dependencies",
-    "lint": "eslint src --ext ts",
+    "lint": "eslint src --ext .ts,.mts",
+    "lint:fix": "eslint src --ext .ts,.mts --fix",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "package": "pnpm run build && vsce package --no-dependencies",
+    "publish": "pnpm run build && vsce publish --no-dependencies",
+    "clean": "rm -rf dist out"
   },
   "dependencies": {
     "vscode-languageclient": "^9.0.1"
@@ -58,6 +90,10 @@
     "@types/vscode": "^1.75.0",
     "@vitest/coverage-v8": "^2.0.0",
     "@vscode/vsce": "^2.22.0",
+    "esbuild": "^0.20.0",
+    "eslint": "^8.57.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
     "typescript": "^5.3.0",
     "vitest": "^2.0.0"
   }

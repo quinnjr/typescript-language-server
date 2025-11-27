@@ -1,0 +1,32 @@
+# Source files (we bundle to dist/)
+src/
+out/
+
+# Configuration files
+.eslintrc.json
+tsconfig.json
+vitest.config.mts
+.gitignore
+
+# Test files
+**/*.test.mts
+**/*.test.ts
+coverage/
+
+# Development files
+.vscode/
+node_modules/
+pnpm-lock.yaml
+
+# Build artifacts not needed
+**/*.map
+
+# Documentation
+*.md
+!README.md
+!CHANGELOG.md
+
+# Git
+.git/
+.gitignore
+

@@ -8,11 +8,13 @@ pnpm-lock.yaml
 
 # VSCode extension build output
 editors/vscode/out/
+editors/vscode/dist/
 *.vsix
 
-# Editor
+# Editor (allow .vscode in editors/vscode for extension debugging)
 .vscode/
 !.vscode/extensions.json
+!editors/vscode/.vscode/
 *.swp
 *.swo
 *~

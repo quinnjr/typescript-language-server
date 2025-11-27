@@ -11,8 +11,11 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "declaration": true
+    "declaration": true,
+    "noEmit": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": false
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "out"]
+  "include": ["src/**/*.mts", "src/**/*.ts"],
+  "exclude": ["node_modules", "out", "dist", "coverage", "**/*.test.mts"]
 }

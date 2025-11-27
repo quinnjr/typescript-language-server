@@ -1,0 +1,78 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "bundle",
+      "problemMatcher": ["$esbuild"],
+      "group": "build",
+      "label": "npm: bundle",
+      "detail": "Bundle extension with esbuild"
+    },
+    {
+      "type": "npm",
+      "script": "bundle:watch",
+      "problemMatcher": ["$esbuild-watch"],
+      "isBackground": true,
+      "group": "build",
+      "label": "npm: bundle:watch",
+      "detail": "Bundle extension with esbuild (watch mode)"
+    },
+    {
+      "type": "npm",
+      "script": "check",
+      "problemMatcher": ["$tsc"],
+      "group": "build",
+      "label": "npm: check",
+      "detail": "Type check with TypeScript"
+    },
+    {
+      "type": "npm",
+      "script": "lint",
+      "problemMatcher": ["$eslint-stylish"],
+      "group": "build",
+      "label": "npm: lint",
+      "detail": "Lint with ESLint"
+    },
+    {
+      "type": "npm",
+      "script": "test",
+      "problemMatcher": [],
+      "group": "test",
+      "label": "npm: test",
+      "detail": "Run tests with Vitest"
+    },
+    {
+      "type": "shell",
+      "label": "Build Rust Server (Debug)",
+      "command": "cargo",
+      "args": ["build"],
+      "options": {
+        "cwd": "${workspaceFolder}/../.."
+      },
+      "problemMatcher": ["$rustc"],
+      "group": "build"
+    },
+    {
+      "type": "shell",
+      "label": "Build Rust Server (Release)",
+      "command": "cargo",
+      "args": ["build", "--release"],
+      "options": {
+        "cwd": "${workspaceFolder}/../.."
+      },
+      "problemMatcher": ["$rustc"],
+      "group": "build"
+    },
+    {
+      "label": "Build All (Debug)",
+      "dependsOn": ["Build Rust Server (Debug)", "npm: bundle"],
+      "dependsOrder": "sequence",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}
+
