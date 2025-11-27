@@ -3,7 +3,7 @@
 A high-performance Language Server Protocol (LSP) implementation for TypeScript and JavaScript, written in Rust.
 
 [![CI](https://github.com/quinnjr/typescript-language-server/actions/workflows/ci.yml/badge.svg)](https://github.com/quinnjr/typescript-language-server/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/quinnjr/typescript-language-server/branch/main/graph/badge.svg)](https://codecov.io/gh/quinnjr/typescript-language-server)
+[![codecov](https://codecov.io/gh/quinnjr/typescript-language-server/graph/badge.svg?token=CFjVJL5yQv)](https://codecov.io/gh/quinnjr/typescript-language-server)
 
 ## Features
 
