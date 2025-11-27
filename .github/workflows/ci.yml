@@ -202,7 +202,7 @@ jobs:
             ${{ runner.os }}-cargo-bench-
 
       - name: Run benchmarks
-        run: cargo bench --no-fail-fast -- --noplot
+        run: cargo bench --bench parsing --bench analysis -- --noplot
 
       - name: Store benchmark results
         uses: actions/upload-artifact@v5
