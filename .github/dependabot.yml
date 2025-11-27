@@ -1,0 +1,38 @@
+version: 2
+updates:
+  # Rust dependencies
+  - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      rust-dependencies:
+        patterns:
+          - "*"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
+  # Node.js dependencies for VSCode extension
+  - package-ecosystem: "npm"
+    directory: "/editors/vscode"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      vscode-dependencies:
+        patterns:
+          - "*"
+
+  # Node.js dependencies for benchmarks
+  - package-ecosystem: "npm"
+    directory: "/benchmarks/scripts"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 3
+
