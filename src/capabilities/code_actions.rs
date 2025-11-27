@@ -554,6 +554,10 @@ fn create_sort_imports_edit(uri: &Url, source: &str) -> WorkspaceEdit {
 mod tests {
     use super::*;
 
+    fn test_uri() -> Url {
+        Url::parse("file:///test/file.ts").unwrap()
+    }
+
     #[test]
     fn test_extract_name_from_message() {
         let message = "Cannot find name 'foo'.";
@@ -566,6 +570,13 @@ mod tests {
         let message = "Some message without quotes";
         let name = extract_name_from_message(message);
         assert!(name.is_none());
+    }
+
+    #[test]
+    fn test_extract_name_single_quote() {
+        let message = "Cannot find 'x'";
+        let name = extract_name_from_message(message);
+        assert_eq!(name, Some("x".to_string()));
     }
 
     #[test]
@@ -589,5 +600,447 @@ mod tests {
         let text = get_text_in_range(source, range);
         assert!(text.contains("line1"));
         assert!(text.contains("line2"));
+    }
+
+    #[test]
+    fn test_get_text_in_range_out_of_bounds() {
+        let source = "short";
+        let range = Range {
+            start: Position::new(0, 0),
+            end: Position::new(10, 0),
+        };
+        let text = get_text_in_range(source, range);
+        // Includes trailing newline from multiline extraction
+        assert!(text.starts_with("short"));
+    }
+
+    #[test]
+    fn test_get_text_in_range_empty() {
+        let source = "const x = 1;";
+        let range = Range {
+            start: Position::new(0, 5),
+            end: Position::new(0, 5),
+        };
+        let text = get_text_in_range(source, range);
+        assert_eq!(text, "");
+    }
+
+    #[test]
+    fn test_create_ts_ignore_action() {
+        let uri = test_uri();
+        let range = Range {
+            start: Position::new(0, 0),
+            end: Position::new(0, 10),
+        };
+
+        let action = create_ts_ignore_action(&uri, &range);
+
+        if let CodeActionOrCommand::CodeAction(ca) = action {
+            assert_eq!(ca.title, "Add @ts-ignore comment");
+            assert_eq!(ca.kind, Some(CodeActionKind::QUICKFIX));
+            assert!(ca.edit.is_some());
+        } else {
+            panic!("Expected CodeAction");
+        }
+    }
+
+    #[test]
+    fn test_create_declare_variable_action() {
+        let uri = test_uri();
+        let range = Range {
+            start: Position::new(0, 0),
+            end: Position::new(0, 3),
+        };
+
+        let action = create_declare_variable_action(&uri, &range, "foo");
+
+        if let CodeActionOrCommand::CodeAction(ca) = action {
+            assert!(ca.title.contains("foo"));
+            assert_eq!(ca.kind, Some(CodeActionKind::QUICKFIX));
+        } else {
+            panic!("Expected CodeAction");
+        }
+    }
+
+    #[test]
+    fn test_create_prefix_underscore_action() {
+        let uri = test_uri();
+        let range = Range {
+            start: Position::new(0, 6),
+            end: Position::new(0, 9),
+        };
+
+        let action = create_prefix_underscore_action(&uri, &range, "foo");
+
+        if let CodeActionOrCommand::CodeAction(ca) = action {
+            assert!(ca.title.contains("foo"));
+            assert!(ca.title.contains("underscore"));
+            assert_eq!(ca.is_preferred, Some(true));
+        } else {
+            panic!("Expected CodeAction");
+        }
+    }
+
+    #[test]
+    fn test_create_remove_unused_action() {
+        let uri = test_uri();
+        let source = "const x = 1;\nconst y = 2;";
+        let range = Range {
+            start: Position::new(0, 6),
+            end: Position::new(0, 7),
+        };
+
+        let action = create_remove_unused_action(&uri, &range, source, "x");
+
+        if let CodeActionOrCommand::CodeAction(ca) = action {
+            assert!(ca.title.contains("Remove"));
+            assert_eq!(ca.kind, Some(CodeActionKind::QUICKFIX));
+        } else {
+            panic!("Expected CodeAction");
+        }
+    }
+
+    #[test]
+    fn test_create_change_to_let_action() {
+        let uri = test_uri();
+        let source = "const x = 1;";
+        let range = Range {
+            start: Position::new(0, 6),
+            end: Position::new(0, 7),
+        };
+
+        let action = create_change_to_let_action(&uri, source, &range);
+
+        if let CodeActionOrCommand::CodeAction(ca) = action {
+            assert!(ca.title.contains("let"));
+            assert_eq!(ca.is_preferred, Some(true));
+        } else {
+            panic!("Expected CodeAction");
+        }
+    }
+
+    #[test]
+    fn test_create_extract_variable_action() {
+        let uri = test_uri();
+        let range = Range {
+            start: Position::new(0, 10),
+            end: Position::new(0, 15),
+        };
+
+        let action = create_extract_variable_action(&uri, range, "1 + 2");
+
+        if let CodeActionOrCommand::CodeAction(ca) = action {
+            assert!(ca.title.contains("Extract"));
+            assert_eq!(ca.kind, Some(CodeActionKind::REFACTOR_EXTRACT));
+        } else {
+            panic!("Expected CodeAction");
+        }
+    }
+
+    #[test]
+    fn test_create_extract_function_action() {
+        let uri = test_uri();
+        let range = Range {
+            start: Position::new(0, 10),
+            end: Position::new(0, 20),
+        };
+
+        let action = create_extract_function_action(&uri, range, "doSomething()");
+
+        if let CodeActionOrCommand::CodeAction(ca) = action {
+            assert!(ca.title.contains("function"));
+            assert_eq!(ca.kind, Some(CodeActionKind::REFACTOR_EXTRACT));
+        } else {
+            panic!("Expected CodeAction");
+        }
+    }
+
+    #[test]
+    fn test_create_convert_to_arrow_action() {
+        let uri = test_uri();
+        let range = Range {
+            start: Position::new(0, 0),
+            end: Position::new(2, 1),
+        };
+
+        let action = create_convert_to_arrow_action(&uri, range, "function foo() { return 1; }");
+
+        if let CodeActionOrCommand::CodeAction(ca) = action {
+            assert!(ca.title.contains("arrow"));
+            assert_eq!(ca.kind, Some(CodeActionKind::REFACTOR_REWRITE));
+        } else {
+            panic!("Expected CodeAction");
+        }
+    }
+
+    #[test]
+    fn test_create_organize_imports_edit() {
+        let uri = test_uri();
+        let source = r#"import { z } from 'z';
+import { a } from 'a';
+import { m } from 'm';
+
+const x = 1;"#;
+
+        let edit = create_organize_imports_edit(&uri, source);
+
+        assert!(edit.changes.is_some());
+        let changes = edit.changes.unwrap();
+        assert!(!changes.is_empty());
+    }
+
+    #[test]
+    fn test_create_organize_imports_no_imports() {
+        let uri = test_uri();
+        let source = "const x = 1;";
+
+        let edit = create_organize_imports_edit(&uri, source);
+
+        // Should still return a valid edit, just with no changes
+        assert!(edit.changes.is_some());
+    }
+
+    #[test]
+    fn test_create_sort_imports_edit() {
+        let uri = test_uri();
+        let source = r#"import { z } from 'z';
+import { a } from 'a';"#;
+
+        let edit = create_sort_imports_edit(&uri, source);
+
+        assert!(edit.changes.is_some());
+    }
+
+    #[test]
+    fn test_get_source_actions() {
+        let uri = test_uri();
+        let source = "const x = 1;";
+        let range = Range {
+            start: Position::new(0, 0),
+            end: Position::new(0, 10),
+        };
+
+        let actions = get_source_actions(&uri, range, source);
+
+        // Should include organize imports, add missing imports, sort imports
+        assert!(actions.len() >= 2);
+
+        // Check for organize imports action
+        let has_organize = actions.iter().any(|a| {
+            if let CodeActionOrCommand::CodeAction(ca) = a {
+                ca.kind == Some(CodeActionKind::SOURCE_ORGANIZE_IMPORTS)
+            } else {
+                false
+            }
+        });
+        assert!(has_organize);
+    }
+
+    #[test]
+    fn test_get_refactoring_actions_empty_selection() {
+        let uri = test_uri();
+        let source = "const x = 1;";
+        let range = Range {
+            start: Position::new(0, 0),
+            end: Position::new(0, 0),
+        };
+        let symbol_table = SymbolTable::new();
+
+        let actions = get_refactoring_actions(&uri, range, &symbol_table, source);
+
+        // Empty selection should not produce extract actions
+        assert!(actions.is_empty());
+    }
+
+    #[test]
+    fn test_get_refactoring_actions_with_selection() {
+        let uri = test_uri();
+        let source = "const x = 1 + 2 + 3;";
+        let range = Range {
+            start: Position::new(0, 10),
+            end: Position::new(0, 19),
+        };
+        let symbol_table = SymbolTable::new();
+
+        let actions = get_refactoring_actions(&uri, range, &symbol_table, source);
+
+        // Should have extract variable and extract function
+        assert!(actions.len() >= 2);
+    }
+
+    #[test]
+    fn test_get_refactoring_actions_function_selection() {
+        let uri = test_uri();
+        let source = "function foo() { return 1; }";
+        let range = Range {
+            start: Position::new(0, 0),
+            end: Position::new(0, 28),
+        };
+        let symbol_table = SymbolTable::new();
+
+        let actions = get_refactoring_actions(&uri, range, &symbol_table, source);
+
+        // Should include convert to arrow function action
+        let has_arrow = actions.iter().any(|a| {
+            if let CodeActionOrCommand::CodeAction(ca) = a {
+                ca.title.contains("arrow")
+            } else {
+                false
+            }
+        });
+        assert!(has_arrow);
+    }
+
+    #[test]
+    fn test_get_diagnostic_fixes_undefined() {
+        let uri = test_uri();
+        let diagnostic = Diagnostic {
+            range: Range {
+                start: Position::new(0, 0),
+                end: Position::new(0, 3),
+            },
+            severity: None,
+            code: Some(tower_lsp::lsp_types::NumberOrString::Number(2304)),
+            code_description: None,
+            source: None,
+            message: "Cannot find name 'foo'.".to_string(),
+            related_information: None,
+            tags: None,
+            data: None,
+        };
+
+        let actions = get_diagnostic_fixes(&uri, &diagnostic, "foo");
+
+        // Should include declare variable and ts-ignore
+        assert!(actions.len() >= 2);
+
+        let has_declare = actions.iter().any(|a| {
+            if let CodeActionOrCommand::CodeAction(ca) = a {
+                ca.title.contains("Declare")
+            } else {
+                false
+            }
+        });
+        assert!(has_declare);
+    }
+
+    #[test]
+    fn test_get_diagnostic_fixes_unused() {
+        let uri = test_uri();
+        let diagnostic = Diagnostic {
+            range: Range {
+                start: Position::new(0, 6),
+                end: Position::new(0, 7),
+            },
+            severity: None,
+            code: Some(tower_lsp::lsp_types::NumberOrString::Number(6133)),
+            code_description: None,
+            source: None,
+            message: "'x' is declared but never used.".to_string(),
+            related_information: None,
+            tags: None,
+            data: None,
+        };
+
+        let actions = get_diagnostic_fixes(&uri, &diagnostic, "const x = 1;");
+
+        // Should include prefix underscore, remove, and ts-ignore
+        assert!(actions.len() >= 3);
+    }
+
+    #[test]
+    fn test_get_diagnostic_fixes_const_reassign() {
+        let uri = test_uri();
+        let diagnostic = Diagnostic {
+            range: Range {
+                start: Position::new(1, 0),
+                end: Position::new(1, 5),
+            },
+            severity: None,
+            code: Some(tower_lsp::lsp_types::NumberOrString::Number(2588)),
+            code_description: None,
+            source: None,
+            message: "Cannot assign to 'x' because it is a constant.".to_string(),
+            related_information: None,
+            tags: None,
+            data: None,
+        };
+
+        let source = "const x = 1;\nx = 2;";
+        let actions = get_diagnostic_fixes(&uri, &diagnostic, source);
+
+        // Should include change to let and ts-ignore
+        assert!(actions.len() >= 2);
+
+        let has_let = actions.iter().any(|a| {
+            if let CodeActionOrCommand::CodeAction(ca) = a {
+                ca.title.contains("let")
+            } else {
+                false
+            }
+        });
+        assert!(has_let);
+    }
+
+    #[test]
+    fn test_get_code_actions() {
+        let uri = test_uri();
+        let source = "const x = 1 + 2;";
+        let range = Range {
+            start: Position::new(0, 10),
+            end: Position::new(0, 15),
+        };
+        let symbol_table = SymbolTable::new();
+
+        let actions = get_code_actions(&uri, range, &[], &symbol_table, source);
+
+        // Should have source actions and refactoring actions
+        assert!(!actions.is_empty());
+    }
+
+    #[test]
+    fn test_get_code_actions_with_diagnostics() {
+        let uri = test_uri();
+        let source = "foo";
+        let range = Range {
+            start: Position::new(0, 0),
+            end: Position::new(0, 3),
+        };
+        let symbol_table = SymbolTable::new();
+        let diagnostics = vec![Diagnostic {
+            range,
+            severity: None,
+            code: Some(tower_lsp::lsp_types::NumberOrString::Number(2304)),
+            code_description: None,
+            source: None,
+            message: "Cannot find name 'foo'.".to_string(),
+            related_information: None,
+            tags: None,
+            data: None,
+        }];
+
+        let actions = get_code_actions(&uri, range, &diagnostics, &symbol_table, source);
+
+        // Should have diagnostic fixes + source actions
+        assert!(actions.len() >= 3);
+    }
+
+    #[test]
+    fn test_change_to_let_no_const() {
+        let uri = test_uri();
+        let source = "let x = 1;";
+        let range = Range {
+            start: Position::new(0, 0),
+            end: Position::new(0, 10),
+        };
+
+        let action = create_change_to_let_action(&uri, source, &range);
+
+        // Should still create an action, just with empty changes
+        if let CodeActionOrCommand::CodeAction(ca) = action {
+            assert!(ca.edit.is_some());
+        } else {
+            panic!("Expected CodeAction");
+        }
     }
 }

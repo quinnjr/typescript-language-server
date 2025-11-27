@@ -180,4 +180,231 @@ impl FileGraph {
         }
         self.imports.insert(path.to_path_buf(), HashSet::new());
     }
+
+    /// Get the number of files in the graph
+    pub fn file_count(&self) -> usize {
+        self.imports.len()
+    }
+
+    /// Check if the graph contains a file
+    pub fn contains_file(&self, path: &Path) -> bool {
+        self.imports.contains_key(path)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_file_graph_new() {
+        let graph = FileGraph::new();
+        assert_eq!(graph.file_count(), 0);
+    }
+
+    #[test]
+    fn test_file_graph_default() {
+        let graph = FileGraph::default();
+        assert_eq!(graph.file_count(), 0);
+    }
+
+    #[test]
+    fn test_add_file() {
+        let mut graph = FileGraph::new();
+        let path = PathBuf::from("/src/main.ts");
+        graph.add_file(path.clone());
+        assert!(graph.contains_file(&path));
+    }
+
+    #[test]
+    fn test_remove_file() {
+        let mut graph = FileGraph::new();
+        let main = PathBuf::from("/src/main.ts");
+        let utils = PathBuf::from("/src/utils.ts");
+
+        graph.add_file(main.clone());
+        graph.add_file(utils.clone());
+        graph.add_import(&main, &utils);
+
+        graph.remove_file(&main);
+        assert!(!graph.contains_file(&main));
+        // utils should still exist but have no importers
+        assert!(graph.get_importers(&utils).map_or(true, |i| i.is_empty()));
+    }
+
+    #[test]
+    fn test_add_import() {
+        let mut graph = FileGraph::new();
+        let main = PathBuf::from("/src/main.ts");
+        let utils = PathBuf::from("/src/utils.ts");
+
+        graph.add_import(&main, &utils);
+
+        let imports = graph.get_imports(&main);
+        assert!(imports.is_some());
+        assert!(imports.unwrap().contains(&utils));
+
+        let importers = graph.get_importers(&utils);
+        assert!(importers.is_some());
+        assert!(importers.unwrap().contains(&main));
+    }
+
+    #[test]
+    fn test_remove_import() {
+        let mut graph = FileGraph::new();
+        let main = PathBuf::from("/src/main.ts");
+        let utils = PathBuf::from("/src/utils.ts");
+
+        graph.add_import(&main, &utils);
+        graph.remove_import(&main, &utils);
+
+        let imports = graph.get_imports(&main);
+        assert!(imports.map_or(true, |i| !i.contains(&utils)));
+    }
+
+    #[test]
+    fn test_get_affected_files() {
+        let mut graph = FileGraph::new();
+        let a = PathBuf::from("/src/a.ts");
+        let b = PathBuf::from("/src/b.ts");
+        let c = PathBuf::from("/src/c.ts");
+
+        // c imports b, b imports a
+        graph.add_import(&b, &a);
+        graph.add_import(&c, &b);
+
+        let affected = graph.get_affected_files(&a);
+        assert!(affected.contains(&a));
+        assert!(affected.contains(&b));
+        assert!(affected.contains(&c));
+    }
+
+    #[test]
+    fn test_get_dependencies() {
+        let mut graph = FileGraph::new();
+        let a = PathBuf::from("/src/a.ts");
+        let b = PathBuf::from("/src/b.ts");
+        let c = PathBuf::from("/src/c.ts");
+
+        // c imports b, b imports a
+        graph.add_import(&b, &a);
+        graph.add_import(&c, &b);
+
+        let deps = graph.get_dependencies(&c);
+        assert!(deps.contains(&c));
+        assert!(deps.contains(&b));
+        assert!(deps.contains(&a));
+    }
+
+    #[test]
+    fn test_has_cycle_no_cycle() {
+        let mut graph = FileGraph::new();
+        let a = PathBuf::from("/src/a.ts");
+        let b = PathBuf::from("/src/b.ts");
+        let c = PathBuf::from("/src/c.ts");
+
+        graph.add_import(&c, &b);
+        graph.add_import(&b, &a);
+
+        assert!(!graph.has_cycle(&a));
+        assert!(!graph.has_cycle(&b));
+        assert!(!graph.has_cycle(&c));
+    }
+
+    #[test]
+    fn test_has_cycle_with_cycle() {
+        let mut graph = FileGraph::new();
+        let a = PathBuf::from("/src/a.ts");
+        let b = PathBuf::from("/src/b.ts");
+        let c = PathBuf::from("/src/c.ts");
+
+        // Create cycle: a -> b -> c -> a
+        graph.add_import(&a, &b);
+        graph.add_import(&b, &c);
+        graph.add_import(&c, &a);
+
+        assert!(graph.has_cycle(&a));
+        assert!(graph.has_cycle(&b));
+        assert!(graph.has_cycle(&c));
+    }
+
+    #[test]
+    fn test_clear_imports() {
+        let mut graph = FileGraph::new();
+        let main = PathBuf::from("/src/main.ts");
+        let utils = PathBuf::from("/src/utils.ts");
+        let helpers = PathBuf::from("/src/helpers.ts");
+
+        graph.add_import(&main, &utils);
+        graph.add_import(&main, &helpers);
+
+        graph.clear_imports(&main);
+
+        let imports = graph.get_imports(&main);
+        assert!(imports.map_or(true, |i| i.is_empty()));
+    }
+
+    #[test]
+    fn test_get_imports_nonexistent() {
+        let graph = FileGraph::new();
+        let path = PathBuf::from("/nonexistent.ts");
+        assert!(graph.get_imports(&path).is_none());
+    }
+
+    #[test]
+    fn test_get_importers_nonexistent() {
+        let graph = FileGraph::new();
+        let path = PathBuf::from("/nonexistent.ts");
+        assert!(graph.get_importers(&path).is_none());
+    }
+
+    #[test]
+    fn test_multiple_imports() {
+        let mut graph = FileGraph::new();
+        let main = PathBuf::from("/src/main.ts");
+        let a = PathBuf::from("/src/a.ts");
+        let b = PathBuf::from("/src/b.ts");
+        let c = PathBuf::from("/src/c.ts");
+
+        graph.add_import(&main, &a);
+        graph.add_import(&main, &b);
+        graph.add_import(&main, &c);
+
+        let imports = graph.get_imports(&main).unwrap();
+        assert_eq!(imports.len(), 3);
+        assert!(imports.contains(&a));
+        assert!(imports.contains(&b));
+        assert!(imports.contains(&c));
+    }
+
+    #[test]
+    fn test_multiple_importers() {
+        let mut graph = FileGraph::new();
+        let utils = PathBuf::from("/src/utils.ts");
+        let a = PathBuf::from("/src/a.ts");
+        let b = PathBuf::from("/src/b.ts");
+        let c = PathBuf::from("/src/c.ts");
+
+        graph.add_import(&a, &utils);
+        graph.add_import(&b, &utils);
+        graph.add_import(&c, &utils);
+
+        let importers = graph.get_importers(&utils).unwrap();
+        assert_eq!(importers.len(), 3);
+        assert!(importers.contains(&a));
+        assert!(importers.contains(&b));
+        assert!(importers.contains(&c));
+    }
+
+    #[test]
+    fn test_affected_files_isolated() {
+        let mut graph = FileGraph::new();
+        let a = PathBuf::from("/src/a.ts");
+
+        graph.add_file(a.clone());
+
+        let affected = graph.get_affected_files(&a);
+        assert_eq!(affected.len(), 1);
+        assert!(affected.contains(&a));
+    }
 }

@@ -239,3 +239,229 @@ impl Default for ModuleResolver {
         Self::new(PathBuf::from("."))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_module_resolver_new() {
+        let resolver = ModuleResolver::new(PathBuf::from("/test"));
+        assert_eq!(resolver.base_dir, PathBuf::from("/test"));
+        assert_eq!(resolver.mode, ModuleResolution::Node);
+        assert!(resolver.path_mappings.is_empty());
+        assert!(resolver.base_url.is_none());
+    }
+
+    #[test]
+    fn test_module_resolver_default() {
+        let resolver = ModuleResolver::default();
+        assert_eq!(resolver.base_dir, PathBuf::from("."));
+        assert_eq!(resolver.mode, ModuleResolution::Node);
+    }
+
+    #[test]
+    fn test_module_resolution_default() {
+        let mode = ModuleResolution::default();
+        assert_eq!(mode, ModuleResolution::Node);
+    }
+
+    #[test]
+    fn test_module_resolution_variants() {
+        assert_eq!(ModuleResolution::Node, ModuleResolution::Node);
+        assert_eq!(ModuleResolution::NodeNext, ModuleResolution::NodeNext);
+        assert_eq!(ModuleResolution::Bundler, ModuleResolution::Bundler);
+        assert_eq!(ModuleResolution::Classic, ModuleResolution::Classic);
+    }
+
+    #[test]
+    fn test_with_tsconfig_node_resolution() {
+        let tsconfig = TsConfig {
+            compiler_options: Some(crate::resolution::tsconfig::CompilerOptions {
+                module_resolution: Some("node".to_string()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+
+        let resolver = ModuleResolver::with_tsconfig(PathBuf::from("/test"), &tsconfig);
+        assert_eq!(resolver.mode, ModuleResolution::Node);
+    }
+
+    #[test]
+    fn test_with_tsconfig_node16_resolution() {
+        let tsconfig = TsConfig {
+            compiler_options: Some(crate::resolution::tsconfig::CompilerOptions {
+                module_resolution: Some("node16".to_string()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+
+        let resolver = ModuleResolver::with_tsconfig(PathBuf::from("/test"), &tsconfig);
+        assert_eq!(resolver.mode, ModuleResolution::NodeNext);
+    }
+
+    #[test]
+    fn test_with_tsconfig_bundler_resolution() {
+        let tsconfig = TsConfig {
+            compiler_options: Some(crate::resolution::tsconfig::CompilerOptions {
+                module_resolution: Some("bundler".to_string()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+
+        let resolver = ModuleResolver::with_tsconfig(PathBuf::from("/test"), &tsconfig);
+        assert_eq!(resolver.mode, ModuleResolution::Bundler);
+    }
+
+    #[test]
+    fn test_with_tsconfig_classic_resolution() {
+        let tsconfig = TsConfig {
+            compiler_options: Some(crate::resolution::tsconfig::CompilerOptions {
+                module_resolution: Some("classic".to_string()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+
+        let resolver = ModuleResolver::with_tsconfig(PathBuf::from("/test"), &tsconfig);
+        assert_eq!(resolver.mode, ModuleResolution::Classic);
+    }
+
+    #[test]
+    fn test_with_tsconfig_base_url() {
+        let tsconfig = TsConfig {
+            compiler_options: Some(crate::resolution::tsconfig::CompilerOptions {
+                base_url: Some("src".to_string()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+
+        let resolver = ModuleResolver::with_tsconfig(PathBuf::from("/test"), &tsconfig);
+        assert_eq!(resolver.base_url, Some(PathBuf::from("/test/src")));
+    }
+
+    #[test]
+    fn test_with_tsconfig_path_mappings() {
+        let mut paths = std::collections::HashMap::new();
+        paths.insert("@/*".to_string(), vec!["src/*".to_string()]);
+
+        let tsconfig = TsConfig {
+            compiler_options: Some(crate::resolution::tsconfig::CompilerOptions {
+                paths: Some(paths),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+
+        let resolver = ModuleResolver::with_tsconfig(PathBuf::from("/test"), &tsconfig);
+        assert_eq!(resolver.path_mappings.len(), 1);
+    }
+
+    #[test]
+    fn test_match_path_pattern_exact() {
+        let result = match_path_pattern("lodash", "lodash");
+        assert_eq!(result, Some(String::new()));
+    }
+
+    #[test]
+    fn test_match_path_pattern_no_match() {
+        let result = match_path_pattern("lodash", "underscore");
+        assert_eq!(result, None);
+    }
+
+    #[test]
+    fn test_match_path_pattern_wildcard() {
+        let result = match_path_pattern("@/*", "@/components/Button");
+        assert_eq!(result, Some("components/Button".to_string()));
+    }
+
+    #[test]
+    fn test_match_path_pattern_prefix_suffix() {
+        let result = match_path_pattern("@app/*-module", "@app/auth-module");
+        assert_eq!(result, Some("auth".to_string()));
+    }
+
+    #[test]
+    fn test_resolved_module_fields() {
+        let module = ResolvedModule {
+            path: PathBuf::from("/test/utils.ts"),
+            is_external: false,
+            specifier: "./utils".to_string(),
+        };
+
+        assert_eq!(module.path, PathBuf::from("/test/utils.ts"));
+        assert!(!module.is_external);
+        assert_eq!(module.specifier, "./utils");
+    }
+
+    #[test]
+    fn test_resolved_module_external() {
+        let module = ResolvedModule {
+            path: PathBuf::from("/node_modules/lodash/index.js"),
+            is_external: true,
+            specifier: "lodash".to_string(),
+        };
+
+        assert!(module.is_external);
+    }
+
+    #[test]
+    fn test_resolve_relative_not_found() {
+        let resolver = ModuleResolver::new(PathBuf::from("/test"));
+        let from_file = PathBuf::from("/test/src/main.ts");
+
+        let result = resolver.resolve("./nonexistent", &from_file);
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_resolve_node_module_not_found() {
+        let resolver = ModuleResolver::new(PathBuf::from("/test"));
+        let from_file = PathBuf::from("/test/src/main.ts");
+
+        let result = resolver.resolve("nonexistent-package", &from_file);
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_resolve_with_base_url_not_found() {
+        let mut resolver = ModuleResolver::new(PathBuf::from("/test"));
+        resolver.base_url = Some(PathBuf::from("/test/src"));
+
+        let from_file = PathBuf::from("/test/src/main.ts");
+        let result = resolver.resolve("nonexistent", &from_file);
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_try_resolve_file_nonexistent() {
+        let resolver = ModuleResolver::new(PathBuf::from("/test"));
+        let result = resolver.try_resolve_file(&PathBuf::from("/nonexistent/file.ts"));
+        assert!(result.is_none());
+    }
+
+    #[test]
+    fn test_module_resolution_clone() {
+        let mode = ModuleResolution::Node;
+        let cloned = mode;
+        assert_eq!(mode, cloned);
+    }
+
+    #[test]
+    fn test_resolved_module_clone() {
+        let module = ResolvedModule {
+            path: PathBuf::from("/test/utils.ts"),
+            is_external: false,
+            specifier: "./utils".to_string(),
+        };
+
+        let cloned = module.clone();
+        assert_eq!(module.path, cloned.path);
+        assert_eq!(module.is_external, cloned.is_external);
+        assert_eq!(module.specifier, cloned.specifier);
+    }
+}

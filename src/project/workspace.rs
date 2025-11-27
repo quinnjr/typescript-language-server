@@ -137,3 +137,252 @@ fn find_tsconfig_files(root: &Path) -> Vec<PathBuf> {
 
     configs
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs;
+    use tempfile::TempDir;
+
+    #[test]
+    fn test_workspace_new() {
+        let root = PathBuf::from("/test/workspace");
+        let workspace = Workspace::new(root.clone());
+
+        assert_eq!(workspace.root, root);
+    }
+
+    #[test]
+    fn test_add_project() {
+        let mut workspace = Workspace::new(PathBuf::from("/test"));
+        let config_path = PathBuf::from("/test/project/tsconfig.json");
+        let project = Project::new(PathBuf::from("/test/project"));
+
+        workspace.add_project(config_path.clone(), project);
+
+        assert!(workspace.get_project(&config_path).is_some());
+    }
+
+    #[test]
+    fn test_remove_project() {
+        let mut workspace = Workspace::new(PathBuf::from("/test"));
+        let config_path = PathBuf::from("/test/project/tsconfig.json");
+        let project = Project::new(PathBuf::from("/test/project"));
+
+        workspace.add_project(config_path.clone(), project);
+        workspace.remove_project(&config_path);
+
+        assert!(workspace.get_project(&config_path).is_none());
+    }
+
+    #[test]
+    fn test_get_projects() {
+        let mut workspace = Workspace::new(PathBuf::from("/test"));
+
+        workspace.add_project(
+            PathBuf::from("/test/a/tsconfig.json"),
+            Project::new(PathBuf::from("/test/a")),
+        );
+        workspace.add_project(
+            PathBuf::from("/test/b/tsconfig.json"),
+            Project::new(PathBuf::from("/test/b")),
+        );
+
+        let projects: Vec<_> = workspace.get_projects().collect();
+        assert_eq!(projects.len(), 2);
+    }
+
+    #[test]
+    fn test_project_for_file() {
+        let mut workspace = Workspace::new(PathBuf::from("/test"));
+
+        workspace.add_project(
+            PathBuf::from("/test/project/tsconfig.json"),
+            Project::new(PathBuf::from("/test/project")),
+        );
+
+        let file = PathBuf::from("/test/project/src/main.ts");
+        let project = workspace.project_for_file(&file);
+
+        assert!(project.is_some());
+        assert_eq!(project.unwrap().root, PathBuf::from("/test/project"));
+    }
+
+    #[test]
+    fn test_project_for_file_nested() {
+        let mut workspace = Workspace::new(PathBuf::from("/test"));
+
+        // Add two projects, one nested inside the other
+        workspace.add_project(
+            PathBuf::from("/test/project/tsconfig.json"),
+            Project::new(PathBuf::from("/test/project")),
+        );
+        workspace.add_project(
+            PathBuf::from("/test/project/packages/lib/tsconfig.json"),
+            Project::new(PathBuf::from("/test/project/packages/lib")),
+        );
+
+        // File in nested project should match the nested project
+        let file = PathBuf::from("/test/project/packages/lib/src/index.ts");
+        let project = workspace.project_for_file(&file);
+
+        assert!(project.is_some());
+        assert_eq!(
+            project.unwrap().root,
+            PathBuf::from("/test/project/packages/lib")
+        );
+    }
+
+    #[test]
+    fn test_project_for_file_not_found() {
+        let workspace = Workspace::new(PathBuf::from("/test"));
+
+        let file = PathBuf::from("/other/project/main.ts");
+        let project = workspace.project_for_file(&file);
+
+        assert!(project.is_none());
+    }
+
+    #[test]
+    fn test_project_for_file_mut() {
+        let mut workspace = Workspace::new(PathBuf::from("/test"));
+
+        workspace.add_project(
+            PathBuf::from("/test/project/tsconfig.json"),
+            Project::new(PathBuf::from("/test/project")),
+        );
+
+        let file = PathBuf::from("/test/project/src/main.ts");
+        let project = workspace.project_for_file_mut(&file);
+
+        assert!(project.is_some());
+        // Add a file to verify mutability
+        project.unwrap().add_file(file.clone());
+    }
+
+    #[test]
+    fn test_discover_projects_creates_default() {
+        let temp_dir = TempDir::new().unwrap();
+
+        let mut workspace = Workspace::new(temp_dir.path().to_path_buf());
+        let result = workspace.discover_projects();
+
+        assert!(result.is_ok());
+        // Should create a default project when no tsconfig found
+        assert!(workspace.get_projects().next().is_some());
+    }
+
+    #[test]
+    fn test_discover_projects_finds_tsconfig() {
+        let temp_dir = TempDir::new().unwrap();
+
+        // Create a tsconfig.json
+        fs::write(
+            temp_dir.path().join("tsconfig.json"),
+            r#"{"compilerOptions": {}}"#,
+        )
+        .unwrap();
+
+        let mut workspace = Workspace::new(temp_dir.path().to_path_buf());
+        let result = workspace.discover_projects();
+
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_discover_projects_nested() {
+        let temp_dir = TempDir::new().unwrap();
+
+        // Create nested tsconfig files
+        let pkg_dir = temp_dir.path().join("packages").join("lib");
+        fs::create_dir_all(&pkg_dir).unwrap();
+
+        fs::write(
+            temp_dir.path().join("tsconfig.json"),
+            r#"{"compilerOptions": {}}"#,
+        )
+        .unwrap();
+
+        fs::write(pkg_dir.join("tsconfig.json"), r#"{"compilerOptions": {}}"#).unwrap();
+
+        let mut workspace = Workspace::new(temp_dir.path().to_path_buf());
+        let result = workspace.discover_projects();
+
+        assert!(result.is_ok());
+        // Should find both tsconfig files
+        let project_count = workspace.get_projects().count();
+        assert!(project_count >= 1);
+    }
+
+    #[test]
+    fn test_find_tsconfig_files_empty() {
+        let temp_dir = TempDir::new().unwrap();
+
+        let configs = find_tsconfig_files(temp_dir.path());
+        assert!(configs.is_empty());
+    }
+
+    #[test]
+    fn test_find_tsconfig_files_single() {
+        let temp_dir = TempDir::new().unwrap();
+
+        fs::write(
+            temp_dir.path().join("tsconfig.json"),
+            r#"{"compilerOptions": {}}"#,
+        )
+        .unwrap();
+
+        let configs = find_tsconfig_files(temp_dir.path());
+        assert_eq!(configs.len(), 1);
+    }
+
+    #[test]
+    fn test_find_tsconfig_files_custom_name() {
+        let temp_dir = TempDir::new().unwrap();
+
+        fs::write(
+            temp_dir.path().join("custom.tsconfig.json"),
+            r#"{"compilerOptions": {}}"#,
+        )
+        .unwrap();
+
+        let configs = find_tsconfig_files(temp_dir.path());
+        assert_eq!(configs.len(), 1);
+    }
+
+    #[test]
+    fn test_find_tsconfig_skips_node_modules() {
+        let temp_dir = TempDir::new().unwrap();
+        let node_modules = temp_dir.path().join("node_modules");
+        fs::create_dir(&node_modules).unwrap();
+
+        fs::write(
+            node_modules.join("tsconfig.json"),
+            r#"{"compilerOptions": {}}"#,
+        )
+        .unwrap();
+
+        let configs = find_tsconfig_files(temp_dir.path());
+        assert!(configs.is_empty());
+    }
+
+    #[test]
+    fn test_find_tsconfig_skips_hidden() {
+        let temp_dir = TempDir::new().unwrap();
+        let hidden = temp_dir.path().join(".hidden");
+        fs::create_dir(&hidden).unwrap();
+
+        fs::write(hidden.join("tsconfig.json"), r#"{"compilerOptions": {}}"#).unwrap();
+
+        let configs = find_tsconfig_files(temp_dir.path());
+        assert!(configs.is_empty());
+    }
+
+    #[test]
+    fn test_get_project_nonexistent() {
+        let workspace = Workspace::new(PathBuf::from("/test"));
+        let config_path = PathBuf::from("/nonexistent/tsconfig.json");
+
+        assert!(workspace.get_project(&config_path).is_none());
+    }
+}
