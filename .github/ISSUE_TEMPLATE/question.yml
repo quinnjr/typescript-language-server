@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         Have a question? We're happy to help!
-        
+
         Before asking, please check:
         - [README](https://github.com/your-username/typescript-language-server#readme)
         - [Existing issues](https://github.com/your-username/typescript-language-server/issues?q=is%3Aissue)
