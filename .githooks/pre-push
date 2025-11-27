@@ -1,0 +1,129 @@
+#!/bin/bash
+#
+# Git pre-push hook for git-flow enforcement
+# Prevents direct pushes to protected branches and validates branch naming
+#
+
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Protected branches
+PROTECTED_BRANCHES=("main" "master" "develop")
+
+# Valid branch patterns
+FEATURE_PATTERN="^feature/.+"
+BUGFIX_PATTERN="^bugfix/.+"
+RELEASE_PATTERN="^release/v?[0-9]+\.[0-9]+\.[0-9]+"
+HOTFIX_PATTERN="^hotfix/v?[0-9]+\.[0-9]+\.[0-9]+"
+
+# Get current branch
+CURRENT_BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null || echo "")
+
+echo -e "${BLUE}Running pre-push checks...${NC}"
+
+# Read the remote and URL
+REMOTE="$1"
+URL="$2"
+
+# Check what's being pushed
+while read LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA; do
+    if [[ "$LOCAL_REF" == "(delete)" ]]; then
+        # Deletion push, skip
+        continue
+    fi
+
+    # Extract branch name from ref
+    if [[ "$LOCAL_REF" =~ refs/heads/(.+) ]]; then
+        PUSH_BRANCH="${BASH_REMATCH[1]}"
+    else
+        PUSH_BRANCH="$LOCAL_REF"
+    fi
+
+    echo "Checking push: $PUSH_BRANCH → $REMOTE"
+
+    # Check if pushing to a protected branch
+    for PROTECTED in "${PROTECTED_BRANCHES[@]}"; do
+        if [[ "$PUSH_BRANCH" == "$PROTECTED" ]]; then
+            echo -e "${RED}❌ Error: Direct pushes to '$PROTECTED' are not allowed.${NC}"
+            echo ""
+            echo "Protected branches can only be updated via pull requests."
+            echo ""
+            echo "Git-flow workflow:"
+            if [[ "$PROTECTED" == "main" || "$PROTECTED" == "master" ]]; then
+                echo "  • Create a release branch: git flow release start v1.0.0"
+                echo "  • Or create a hotfix branch: git flow hotfix start v1.0.1"
+            else
+                echo "  • Create a feature branch: git flow feature start my-feature"
+                echo "  • Or create a bugfix branch: git checkout -b bugfix/issue-123"
+            fi
+            echo ""
+            echo "Then push your branch and create a pull request."
+            exit 1
+        fi
+    done
+
+    # Validate branch naming for non-protected branches
+    if [[ "$PUSH_BRANCH" != "develop" && "$PUSH_BRANCH" != "main" && "$PUSH_BRANCH" != "master" ]]; then
+        VALID_BRANCH=false
+        BRANCH_TYPE=""
+
+        if [[ "$PUSH_BRANCH" =~ $FEATURE_PATTERN ]]; then
+            VALID_BRANCH=true
+            BRANCH_TYPE="feature"
+        elif [[ "$PUSH_BRANCH" =~ $BUGFIX_PATTERN ]]; then
+            VALID_BRANCH=true
+            BRANCH_TYPE="bugfix"
+        elif [[ "$PUSH_BRANCH" =~ $RELEASE_PATTERN ]]; then
+            VALID_BRANCH=true
+            BRANCH_TYPE="release"
+        elif [[ "$PUSH_BRANCH" =~ $HOTFIX_PATTERN ]]; then
+            VALID_BRANCH=true
+            BRANCH_TYPE="hotfix"
+        fi
+
+        if [[ "$VALID_BRANCH" == false ]]; then
+            echo -e "${RED}❌ Error: Branch '$PUSH_BRANCH' does not follow git-flow naming.${NC}"
+            echo ""
+            echo "Valid branch patterns:"
+            echo "  • feature/<description>  - New features"
+            echo "  • bugfix/<description>   - Bug fixes"
+            echo "  • release/v<version>     - Release branches"
+            echo "  • hotfix/v<version>      - Hotfix branches"
+            echo ""
+            echo "Examples:"
+            echo "  • feature/add-completions"
+            echo "  • bugfix/issue-123-fix-parser"
+            echo "  • release/v1.0.0"
+            echo "  • hotfix/v1.0.1"
+            echo ""
+            echo "To rename your branch:"
+            echo "  git branch -m $PUSH_BRANCH feature/<description>"
+            exit 1
+        fi
+
+        echo -e "${GREEN}✓ Branch naming OK ($BRANCH_TYPE)${NC}"
+    fi
+
+done
+
+# Run tests before push (optional, can be slow)
+if [[ -n "$RUN_TESTS_ON_PUSH" ]]; then
+    echo "Running tests..."
+    if command -v cargo &> /dev/null; then
+        if ! cargo test --quiet; then
+            echo -e "${RED}❌ Error: Tests failed. Push aborted.${NC}"
+            exit 1
+        fi
+        echo -e "${GREEN}✓ Tests passed${NC}"
+    fi
+fi
+
+echo -e "${GREEN}✓ Pre-push checks passed${NC}"
+exit 0
+

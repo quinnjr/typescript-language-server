@@ -1,0 +1,75 @@
+#!/bin/bash
+#
+# Git commit-msg hook for git-flow enforcement
+# Validates commit messages follow conventional commits format
+#
+
+set -e
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+COMMIT_MSG_FILE="$1"
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# Skip merge commits
+if [[ "$COMMIT_MSG" =~ ^Merge ]]; then
+    exit 0
+fi
+
+# Skip fixup and squash commits
+if [[ "$COMMIT_MSG" =~ ^(fixup|squash)! ]]; then
+    exit 0
+fi
+
+# Conventional commit pattern
+# type(scope): description
+# type: description
+CONVENTIONAL_PATTERN="^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)(\([a-zA-Z0-9_-]+\))?: .{1,}"
+
+# Also allow WIP commits during development
+WIP_PATTERN="^(WIP|wip):? .+"
+
+if [[ ! "$COMMIT_MSG" =~ $CONVENTIONAL_PATTERN ]] && [[ ! "$COMMIT_MSG" =~ $WIP_PATTERN ]]; then
+    echo -e "${RED}❌ Error: Commit message does not follow conventional commits format.${NC}"
+    echo ""
+    echo "Your message: \"$COMMIT_MSG\""
+    echo ""
+    echo "Expected format: type(scope): description"
+    echo ""
+    echo "Valid types:"
+    echo "  feat     - New feature"
+    echo "  fix      - Bug fix"
+    echo "  docs     - Documentation only"
+    echo "  style    - Formatting, no code change"
+    echo "  refactor - Code restructuring"
+    echo "  perf     - Performance improvement"
+    echo "  test     - Adding tests"
+    echo "  chore    - Maintenance tasks"
+    echo "  ci       - CI/CD changes"
+    echo "  build    - Build system changes"
+    echo "  revert   - Revert a previous commit"
+    echo ""
+    echo "Examples:"
+    echo "  feat(parser): add JSX support"
+    echo "  fix(completions): handle null values"
+    echo "  docs: update README"
+    echo "  chore(deps): update dependencies"
+    echo ""
+    echo "Note: WIP commits are allowed during development (e.g., 'WIP: working on feature')"
+    exit 1
+fi
+
+# Check message length (warning only)
+FIRST_LINE=$(echo "$COMMIT_MSG" | head -n1)
+if [[ ${#FIRST_LINE} -gt 72 ]]; then
+    echo -e "${YELLOW}⚠ Warning: First line of commit message is longer than 72 characters (${#FIRST_LINE}).${NC}"
+    echo "Consider shortening it for better readability in git log."
+fi
+
+echo -e "${GREEN}✓ Commit message format OK${NC}"
+exit 0
+
