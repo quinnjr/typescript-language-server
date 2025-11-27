@@ -20,7 +20,10 @@ fn collect_errors(node: tree_sitter::Node, source: &str, diagnostics: &mut Vec<D
             code: None,
             code_description: None,
             source: Some("ts-lsp-rust".to_string()),
-            message: format!("Syntax error: unexpected '{}'", text.chars().take(50).collect::<String>()),
+            message: format!(
+                "Syntax error: unexpected '{}'",
+                text.chars().take(50).collect::<String>()
+            ),
             related_information: None,
             tags: None,
             data: None,

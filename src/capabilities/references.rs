@@ -260,14 +260,20 @@ mod tests {
         );
 
         // Add multiple references
-        table.add_reference(id, Range {
-            start: Position::new(1, 12),
-            end: Position::new(1, 13),
-        });
-        table.add_reference(id, Range {
-            start: Position::new(2, 7),
-            end: Position::new(2, 8),
-        });
+        table.add_reference(
+            id,
+            Range {
+                start: Position::new(1, 12),
+                end: Position::new(1, 13),
+            },
+        );
+        table.add_reference(
+            id,
+            Range {
+                start: Position::new(2, 7),
+                end: Position::new(2, 8),
+            },
+        );
 
         let refs = get_references(&table, source, Position::new(0, 6), &uri, true);
 

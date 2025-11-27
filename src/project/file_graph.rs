@@ -176,4 +176,3 @@ impl FileGraph {
         self.imports.insert(path.to_path_buf(), HashSet::new());
     }
 }
-

@@ -1,4 +1,4 @@
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
+use criterion::{BenchmarkId, Criterion, Throughput, black_box, criterion_group, criterion_main};
 use tree_sitter::Parser;
 
 /// Sample TypeScript code of various sizes
@@ -225,4 +225,3 @@ criterion_group!(
     bench_tree_traversal
 );
 criterion_main!(benches);
-

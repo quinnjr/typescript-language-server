@@ -607,14 +607,21 @@ impl<'a> Binder<'a> {
                         return;
                     }
                 }
-                "function_declaration" | "class_declaration" | "interface_declaration"
-                | "type_alias_declaration" | "enum_declaration" | "method_definition" => {
+                "function_declaration"
+                | "class_declaration"
+                | "interface_declaration"
+                | "type_alias_declaration"
+                | "enum_declaration"
+                | "method_definition" => {
                     if parent.child_by_field_name("name") == Some(node) {
                         return;
                     }
                 }
-                "import_specifier" | "shorthand_property_identifier_pattern"
-                | "required_parameter" | "optional_parameter" | "rest_parameter" => {
+                "import_specifier"
+                | "shorthand_property_identifier_pattern"
+                | "required_parameter"
+                | "optional_parameter"
+                | "rest_parameter" => {
                     return;
                 }
                 _ => {}
@@ -865,7 +872,9 @@ mod tests {
         let symbols: Vec<_> = table.all_symbols().collect();
         // Either we find utils or the import is structured differently
         let has_utils = table.lookup("utils", 0).is_some();
-        let has_import_symbol = symbols.iter().any(|s| s.flags.contains(SymbolFlags::IMPORT));
+        let has_import_symbol = symbols
+            .iter()
+            .any(|s| s.flags.contains(SymbolFlags::IMPORT));
         assert!(has_utils || has_import_symbol || symbols.is_empty());
     }
 

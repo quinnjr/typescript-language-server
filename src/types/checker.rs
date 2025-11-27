@@ -495,8 +495,14 @@ mod tests {
         let true_id = checker.type_of_literal("true", "true");
         let false_id = checker.type_of_literal("false", "false");
 
-        assert!(matches!(checker.get_type(true_id).unwrap(), Type::BooleanLiteral(true)));
-        assert!(matches!(checker.get_type(false_id).unwrap(), Type::BooleanLiteral(false)));
+        assert!(matches!(
+            checker.get_type(true_id).unwrap(),
+            Type::BooleanLiteral(true)
+        ));
+        assert!(matches!(
+            checker.get_type(false_id).unwrap(),
+            Type::BooleanLiteral(false)
+        ));
     }
 
     #[test]

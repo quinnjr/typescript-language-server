@@ -45,7 +45,11 @@ fn node_to_symbol(node: &Node, source: &str) -> Option<DocumentSymbol> {
         }
         "type_alias_declaration" => {
             let name = get_child_by_field(node, "name", source)?;
-            (name, SymbolKind::TYPE_PARAMETER, Some("type alias".to_string()))
+            (
+                name,
+                SymbolKind::TYPE_PARAMETER,
+                Some("type alias".to_string()),
+            )
         }
         "enum_declaration" => {
             let name = get_child_by_field(node, "name", source)?;

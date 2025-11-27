@@ -1,8 +1,8 @@
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
-use crate::resolution::tsconfig::TsConfig;
 use crate::resolution::ModuleResolver;
+use crate::resolution::tsconfig::TsConfig;
 
 use super::FileGraph;
 
@@ -191,4 +191,3 @@ impl Project {
         self.files.iter()
     }
 }
-

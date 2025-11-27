@@ -14,13 +14,35 @@ fn collect_folding_ranges(node: tree_sitter::Node, ranges: &mut Vec<FoldingRange
     // Determine if this node should be foldable and what kind
     let folding_kind = match kind {
         // Code blocks
-        "function_declaration" | "function" | "arrow_function" | "method_definition"
-        | "class_declaration" | "class" | "interface_declaration" | "enum_declaration"
-        | "type_alias_declaration" | "class_body" | "interface_body" | "enum_body"
-        | "statement_block" | "switch_body" | "object" | "object_type" | "object_pattern"
-        | "array" | "array_pattern" | "if_statement" | "for_statement" | "for_in_statement"
-        | "for_of_statement" | "while_statement" | "do_statement" | "try_statement"
-        | "catch_clause" | "finally_clause" | "switch_statement" => Some(FoldingRangeKind::Region),
+        "function_declaration"
+        | "function"
+        | "arrow_function"
+        | "method_definition"
+        | "class_declaration"
+        | "class"
+        | "interface_declaration"
+        | "enum_declaration"
+        | "type_alias_declaration"
+        | "class_body"
+        | "interface_body"
+        | "enum_body"
+        | "statement_block"
+        | "switch_body"
+        | "object"
+        | "object_type"
+        | "object_pattern"
+        | "array"
+        | "array_pattern"
+        | "if_statement"
+        | "for_statement"
+        | "for_in_statement"
+        | "for_of_statement"
+        | "while_statement"
+        | "do_statement"
+        | "try_statement"
+        | "catch_clause"
+        | "finally_clause"
+        | "switch_statement" => Some(FoldingRangeKind::Region),
 
         // Import groups
         "import_statement" => Some(FoldingRangeKind::Imports),

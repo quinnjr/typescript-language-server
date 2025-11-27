@@ -72,7 +72,11 @@ impl LanguageServer for Backend {
                     work_done_progress_options: WorkDoneProgressOptions::default(),
                 })),
                 completion_provider: Some(CompletionOptions {
-                    trigger_characters: Some(vec![".".to_string(), "<".to_string(), "/".to_string()]),
+                    trigger_characters: Some(vec![
+                        ".".to_string(),
+                        "<".to_string(),
+                        "/".to_string(),
+                    ]),
                     resolve_provider: Some(true),
                     work_done_progress_options: WorkDoneProgressOptions::default(),
                     all_commit_characters: None,
@@ -84,18 +88,20 @@ impl LanguageServer for Backend {
                     work_done_progress_options: WorkDoneProgressOptions::default(),
                 }),
                 inlay_hint_provider: Some(OneOf::Left(true)),
-                code_action_provider: Some(CodeActionProviderCapability::Options(CodeActionOptions {
-                    code_action_kinds: Some(vec![
-                        CodeActionKind::QUICKFIX,
-                        CodeActionKind::REFACTOR,
-                        CodeActionKind::REFACTOR_EXTRACT,
-                        CodeActionKind::REFACTOR_REWRITE,
-                        CodeActionKind::SOURCE,
-                        CodeActionKind::SOURCE_ORGANIZE_IMPORTS,
-                    ]),
-                    work_done_progress_options: WorkDoneProgressOptions::default(),
-                    resolve_provider: Some(false),
-                })),
+                code_action_provider: Some(CodeActionProviderCapability::Options(
+                    CodeActionOptions {
+                        code_action_kinds: Some(vec![
+                            CodeActionKind::QUICKFIX,
+                            CodeActionKind::REFACTOR,
+                            CodeActionKind::REFACTOR_EXTRACT,
+                            CodeActionKind::REFACTOR_REWRITE,
+                            CodeActionKind::SOURCE,
+                            CodeActionKind::SOURCE_ORGANIZE_IMPORTS,
+                        ]),
+                        work_done_progress_options: WorkDoneProgressOptions::default(),
+                        resolve_provider: Some(false),
+                    },
+                )),
                 ..Default::default()
             },
             server_info: Some(ServerInfo {
@@ -256,11 +262,7 @@ impl LanguageServer for Backend {
                     uri,
                     include_declaration,
                 );
-                if refs.is_empty() {
-                    None
-                } else {
-                    Some(refs)
-                }
+                if refs.is_empty() { None } else { Some(refs) }
             } else {
                 None
             }

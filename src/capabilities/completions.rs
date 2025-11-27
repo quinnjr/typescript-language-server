@@ -94,8 +94,11 @@ fn get_completion_context(tree: &Tree, source: &str, position: Position) -> Comp
                 "import_statement" | "import_clause" | "named_imports" => {
                     return CompletionContext::Import;
                 }
-                "type_annotation" | "type_alias_declaration" | "extends_clause"
-                | "implements_clause" | "type_arguments" => {
+                "type_annotation"
+                | "type_alias_declaration"
+                | "extends_clause"
+                | "implements_clause"
+                | "type_arguments" => {
                     return CompletionContext::Type;
                 }
                 "jsx_element" | "jsx_self_closing_element" | "jsx_opening_element" => {
@@ -119,7 +122,11 @@ fn get_completion_context(tree: &Tree, source: &str, position: Position) -> Comp
                     if let Some('.') = chars.get(position.character as usize - 1) {
                         // Find what's before the dot
                         let before_dot = &line[..position.character as usize - 1];
-                        let object_name = before_dot.split_whitespace().last().unwrap_or("").to_string();
+                        let object_name = before_dot
+                            .split_whitespace()
+                            .last()
+                            .unwrap_or("")
+                            .to_string();
                         if !object_name.is_empty() {
                             return CompletionContext::MemberAccess(object_name);
                         }
@@ -477,7 +484,11 @@ fn get_console_completions() -> Vec<CompletionItem> {
         create_method_completion("count", "(label?: string): void", "Count occurrences"),
         create_method_completion("group", "(...data: any[]): void", "Start group"),
         create_method_completion("groupEnd", "(): void", "End group"),
-        create_method_completion("assert", "(condition?: boolean, ...data: any[]): void", "Assert condition"),
+        create_method_completion(
+            "assert",
+            "(condition?: boolean, ...data: any[]): void",
+            "Assert condition",
+        ),
     ]
 }
 
@@ -505,7 +516,11 @@ fn get_math_completions() -> Vec<CompletionItem> {
 fn get_json_completions() -> Vec<CompletionItem> {
     vec![
         create_method_completion("parse", "(text: string): any", "Parse JSON string"),
-        create_method_completion("stringify", "(value: any): string", "Convert to JSON string"),
+        create_method_completion(
+            "stringify",
+            "(value: any): string",
+            "Convert to JSON string",
+        ),
     ]
 }
 
@@ -513,41 +528,105 @@ fn get_object_completions() -> Vec<CompletionItem> {
     vec![
         create_method_completion("keys", "(obj: object): string[]", "Get object keys"),
         create_method_completion("values", "(obj: object): any[]", "Get object values"),
-        create_method_completion("entries", "(obj: object): [string, any][]", "Get key-value pairs"),
-        create_method_completion("assign", "(target: object, ...sources: object[]): object", "Copy properties"),
+        create_method_completion(
+            "entries",
+            "(obj: object): [string, any][]",
+            "Get key-value pairs",
+        ),
+        create_method_completion(
+            "assign",
+            "(target: object, ...sources: object[]): object",
+            "Copy properties",
+        ),
         create_method_completion("freeze", "<T>(obj: T): Readonly<T>", "Freeze object"),
         create_method_completion("seal", "<T>(obj: T): T", "Seal object"),
-        create_method_completion("create", "(proto: object | null): object", "Create with prototype"),
-        create_method_completion("defineProperty", "(obj: object, prop: string, descriptor: object): object", "Define property"),
-        create_method_completion("hasOwn", "(obj: object, prop: string): boolean", "Check own property"),
-        create_method_completion("fromEntries", "(entries: Iterable<[string, any]>): object", "Create from entries"),
+        create_method_completion(
+            "create",
+            "(proto: object | null): object",
+            "Create with prototype",
+        ),
+        create_method_completion(
+            "defineProperty",
+            "(obj: object, prop: string, descriptor: object): object",
+            "Define property",
+        ),
+        create_method_completion(
+            "hasOwn",
+            "(obj: object, prop: string): boolean",
+            "Check own property",
+        ),
+        create_method_completion(
+            "fromEntries",
+            "(entries: Iterable<[string, any]>): object",
+            "Create from entries",
+        ),
     ]
 }
 
 fn get_array_static_completions() -> Vec<CompletionItem> {
     vec![
         create_method_completion("isArray", "(value: any): boolean", "Check if array"),
-        create_method_completion("from", "(arrayLike: ArrayLike<any>): any[]", "Create from array-like"),
+        create_method_completion(
+            "from",
+            "(arrayLike: ArrayLike<any>): any[]",
+            "Create from array-like",
+        ),
         create_method_completion("of", "(...items: any[]): any[]", "Create from items"),
     ]
 }
 
 fn get_string_static_completions() -> Vec<CompletionItem> {
     vec![
-        create_method_completion("fromCharCode", "(...codes: number[]): string", "Create from char codes"),
-        create_method_completion("fromCodePoint", "(...codePoints: number[]): string", "Create from code points"),
-        create_method_completion("raw", "(template: TemplateStringsArray, ...substitutions: any[]): string", "Raw template string"),
+        create_method_completion(
+            "fromCharCode",
+            "(...codes: number[]): string",
+            "Create from char codes",
+        ),
+        create_method_completion(
+            "fromCodePoint",
+            "(...codePoints: number[]): string",
+            "Create from code points",
+        ),
+        create_method_completion(
+            "raw",
+            "(template: TemplateStringsArray, ...substitutions: any[]): string",
+            "Raw template string",
+        ),
     ]
 }
 
 fn get_promise_completions() -> Vec<CompletionItem> {
     vec![
-        create_method_completion("all", "<T>(values: Promise<T>[]): Promise<T[]>", "Wait for all promises"),
-        create_method_completion("race", "<T>(values: Promise<T>[]): Promise<T>", "First settled promise"),
-        create_method_completion("resolve", "<T>(value: T): Promise<T>", "Create resolved promise"),
-        create_method_completion("reject", "(reason: any): Promise<never>", "Create rejected promise"),
-        create_method_completion("allSettled", "<T>(values: Promise<T>[]): Promise<PromiseSettledResult<T>[]>", "All settled results"),
-        create_method_completion("any", "<T>(values: Promise<T>[]): Promise<T>", "First fulfilled promise"),
+        create_method_completion(
+            "all",
+            "<T>(values: Promise<T>[]): Promise<T[]>",
+            "Wait for all promises",
+        ),
+        create_method_completion(
+            "race",
+            "<T>(values: Promise<T>[]): Promise<T>",
+            "First settled promise",
+        ),
+        create_method_completion(
+            "resolve",
+            "<T>(value: T): Promise<T>",
+            "Create resolved promise",
+        ),
+        create_method_completion(
+            "reject",
+            "(reason: any): Promise<never>",
+            "Create rejected promise",
+        ),
+        create_method_completion(
+            "allSettled",
+            "<T>(values: Promise<T>[]): Promise<PromiseSettledResult<T>[]>",
+            "All settled results",
+        ),
+        create_method_completion(
+            "any",
+            "<T>(values: Promise<T>[]): Promise<T>",
+            "First fulfilled promise",
+        ),
     ]
 }
 
@@ -658,11 +737,10 @@ fn get_import_completions() -> Vec<CompletionItem> {
 /// Get JSX tag completions
 fn get_jsx_completions() -> Vec<CompletionItem> {
     let html_tags = [
-        "div", "span", "p", "a", "button", "input", "form", "label",
-        "h1", "h2", "h3", "h4", "h5", "h6", "header", "footer", "main",
-        "nav", "section", "article", "aside", "ul", "ol", "li",
-        "table", "tr", "td", "th", "thead", "tbody", "img", "video",
-        "audio", "canvas", "svg", "iframe", "pre", "code", "br", "hr",
+        "div", "span", "p", "a", "button", "input", "form", "label", "h1", "h2", "h3", "h4", "h5",
+        "h6", "header", "footer", "main", "nav", "section", "article", "aside", "ul", "ol", "li",
+        "table", "tr", "td", "th", "thead", "tbody", "img", "video", "audio", "canvas", "svg",
+        "iframe", "pre", "code", "br", "hr",
     ];
 
     html_tags
@@ -729,7 +807,11 @@ mod tests {
         let completions = get_snippet_completions();
         assert!(!completions.is_empty());
         assert!(completions.iter().any(|c| c.label == "log"));
-        assert!(completions.iter().any(|c| c.insert_text_format == Some(InsertTextFormat::SNIPPET)));
+        assert!(
+            completions
+                .iter()
+                .any(|c| c.insert_text_format == Some(InsertTextFormat::SNIPPET))
+        );
     }
 
     #[test]
@@ -771,10 +853,21 @@ mod tests {
 
     #[test]
     fn test_symbol_flags_to_completion_kind() {
-        assert_eq!(symbol_flags_to_completion_kind(SymbolFlags::FUNCTION), CompletionItemKind::FUNCTION);
-        assert_eq!(symbol_flags_to_completion_kind(SymbolFlags::CLASS), CompletionItemKind::CLASS);
-        assert_eq!(symbol_flags_to_completion_kind(SymbolFlags::VARIABLE), CompletionItemKind::VARIABLE);
-        assert_eq!(symbol_flags_to_completion_kind(SymbolFlags::CONST | SymbolFlags::VARIABLE), CompletionItemKind::CONSTANT);
+        assert_eq!(
+            symbol_flags_to_completion_kind(SymbolFlags::FUNCTION),
+            CompletionItemKind::FUNCTION
+        );
+        assert_eq!(
+            symbol_flags_to_completion_kind(SymbolFlags::CLASS),
+            CompletionItemKind::CLASS
+        );
+        assert_eq!(
+            symbol_flags_to_completion_kind(SymbolFlags::VARIABLE),
+            CompletionItemKind::VARIABLE
+        );
+        assert_eq!(
+            symbol_flags_to_completion_kind(SymbolFlags::CONST | SymbolFlags::VARIABLE),
+            CompletionItemKind::CONSTANT
+        );
     }
 }
-

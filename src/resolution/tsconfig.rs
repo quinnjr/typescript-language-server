@@ -66,14 +66,14 @@ pub struct ProjectReference {
 impl TsConfig {
     /// Load a tsconfig.json file
     pub fn load(path: &Path) -> Result<Self, TsConfigError> {
-        let content = std::fs::read_to_string(path)
-            .map_err(|e| TsConfigError::IoError(e.to_string()))?;
+        let content =
+            std::fs::read_to_string(path).map_err(|e| TsConfigError::IoError(e.to_string()))?;
 
         // Remove comments (simple approach - doesn't handle all cases)
         let content = remove_json_comments(&content);
 
-        let config: TsConfig = serde_json::from_str(&content)
-            .map_err(|e| TsConfigError::ParseError(e.to_string()))?;
+        let config: TsConfig =
+            serde_json::from_str(&content).map_err(|e| TsConfigError::ParseError(e.to_string()))?;
 
         // Handle extends
         if let Some(ref extends) = config.extends_path {
@@ -141,17 +141,25 @@ impl CompilerOptions {
             strict_null_checks: self.strict_null_checks.or(base.strict_null_checks),
             strict_function_types: self.strict_function_types.or(base.strict_function_types),
             strict_bind_call_apply: self.strict_bind_call_apply.or(base.strict_bind_call_apply),
-            strict_property_initialization: self.strict_property_initialization.or(base.strict_property_initialization),
+            strict_property_initialization: self
+                .strict_property_initialization
+                .or(base.strict_property_initialization),
             no_implicit_this: self.no_implicit_this.or(base.no_implicit_this),
             always_strict: self.always_strict.or(base.always_strict),
             no_unused_locals: self.no_unused_locals.or(base.no_unused_locals),
             no_unused_parameters: self.no_unused_parameters.or(base.no_unused_parameters),
             no_implicit_returns: self.no_implicit_returns.or(base.no_implicit_returns),
-            no_fallthrough_cases_in_switch: self.no_fallthrough_cases_in_switch.or(base.no_fallthrough_cases_in_switch),
+            no_fallthrough_cases_in_switch: self
+                .no_fallthrough_cases_in_switch
+                .or(base.no_fallthrough_cases_in_switch),
             es_module_interop: self.es_module_interop.or(base.es_module_interop),
-            allow_synthetic_default_imports: self.allow_synthetic_default_imports.or(base.allow_synthetic_default_imports),
+            allow_synthetic_default_imports: self
+                .allow_synthetic_default_imports
+                .or(base.allow_synthetic_default_imports),
             skip_lib_check: self.skip_lib_check.or(base.skip_lib_check),
-            force_consistent_casing_in_file_names: self.force_consistent_casing_in_file_names.or(base.force_consistent_casing_in_file_names),
+            force_consistent_casing_in_file_names: self
+                .force_consistent_casing_in_file_names
+                .or(base.force_consistent_casing_in_file_names),
             resolve_json_module: self.resolve_json_module.or(base.resolve_json_module),
             isolated_modules: self.isolated_modules.or(base.isolated_modules),
             jsx: self.jsx.or(base.jsx),

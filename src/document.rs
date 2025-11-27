@@ -2,7 +2,7 @@ use dashmap::DashMap;
 use tower_lsp::lsp_types::Url;
 use tree_sitter::Tree;
 
-use crate::analysis::{binder, SymbolTable};
+use crate::analysis::{SymbolTable, binder};
 use crate::parser::{SourceLanguage, SourceParser};
 
 /// Represents an open document with its content and parsed tree
@@ -218,8 +218,14 @@ mod tests {
         // Change "1" to "42"
         let changes = vec![TextDocumentContentChangeEvent {
             range: Some(Range {
-                start: Position { line: 0, character: 10 },
-                end: Position { line: 0, character: 11 },
+                start: Position {
+                    line: 0,
+                    character: 10,
+                },
+                end: Position {
+                    line: 0,
+                    character: 11,
+                },
             }),
             range_length: Some(1),
             text: "42".to_string(),
@@ -239,19 +245,31 @@ mod tests {
         let doc = Document::new(&uri, content, 1, &mut parser);
 
         // Test line 0, character 0
-        let offset = doc.offset_at_position(Position { line: 0, character: 0 });
+        let offset = doc.offset_at_position(Position {
+            line: 0,
+            character: 0,
+        });
         assert_eq!(offset, 0);
 
         // Test line 0, character 3
-        let offset = doc.offset_at_position(Position { line: 0, character: 3 });
+        let offset = doc.offset_at_position(Position {
+            line: 0,
+            character: 3,
+        });
         assert_eq!(offset, 3);
 
         // Test line 1, character 0 (after "line1\n")
-        let offset = doc.offset_at_position(Position { line: 1, character: 0 });
+        let offset = doc.offset_at_position(Position {
+            line: 1,
+            character: 0,
+        });
         assert_eq!(offset, 6);
 
         // Test line 2, character 2
-        let offset = doc.offset_at_position(Position { line: 2, character: 2 });
+        let offset = doc.offset_at_position(Position {
+            line: 2,
+            character: 2,
+        });
         assert_eq!(offset, 14);
     }
 
@@ -381,7 +399,8 @@ mod tests {
             }
 
             export { User, UserService };
-        "#.to_string();
+        "#
+        .to_string();
 
         let doc = Document::new(&uri, content, 1, &mut parser);
 
@@ -402,8 +421,14 @@ mod tests {
         // Replace "line2" with "replaced"
         let changes = vec![TextDocumentContentChangeEvent {
             range: Some(Range {
-                start: Position { line: 1, character: 0 },
-                end: Position { line: 1, character: 5 },
+                start: Position {
+                    line: 1,
+                    character: 0,
+                },
+                end: Position {
+                    line: 1,
+                    character: 5,
+                },
             }),
             range_length: Some(5),
             text: "replaced".to_string(),

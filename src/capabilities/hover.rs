@@ -44,8 +44,14 @@ pub fn get_hover(tree: &Tree, source: &str, position: Position) -> Option<Hover>
     content.push_str(&format!("*Node: {} → {}*", parent_kind, node_kind));
 
     let range = Range {
-        start: Position::new(node.start_position().row as u32, node.start_position().column as u32),
-        end: Position::new(node.end_position().row as u32, node.end_position().column as u32),
+        start: Position::new(
+            node.start_position().row as u32,
+            node.start_position().column as u32,
+        ),
+        end: Position::new(
+            node.end_position().row as u32,
+            node.end_position().column as u32,
+        ),
     };
 
     Some(Hover {
@@ -65,9 +71,14 @@ fn find_jsdoc_comment(node: &tree_sitter::Node, source: &str) -> Option<String> 
     // First, try to find the declaration this node belongs to
     while let Some(parent) = current.parent() {
         match parent.kind() {
-            "function_declaration" | "class_declaration" | "method_definition"
-            | "variable_declaration" | "lexical_declaration" | "interface_declaration"
-            | "type_alias_declaration" | "enum_declaration" => {
+            "function_declaration"
+            | "class_declaration"
+            | "method_definition"
+            | "variable_declaration"
+            | "lexical_declaration"
+            | "interface_declaration"
+            | "type_alias_declaration"
+            | "enum_declaration" => {
                 current = parent;
                 break;
             }
@@ -106,12 +117,7 @@ fn parse_jsdoc(comment: &str) -> Option<String> {
     // Process each line
     let processed: Vec<String> = lines
         .iter()
-        .map(|line| {
-            line.trim()
-                .trim_start_matches('*')
-                .trim_start()
-                .to_string()
-        })
+        .map(|line| line.trim().trim_start_matches('*').trim_start().to_string())
         .filter(|line| !line.is_empty())
         .collect();
 
@@ -273,11 +279,23 @@ function greet() { }
 
     #[test]
     fn test_get_display_kind_identifier() {
-        assert_eq!(get_display_kind("identifier", "function_declaration"), "function");
+        assert_eq!(
+            get_display_kind("identifier", "function_declaration"),
+            "function"
+        );
         assert_eq!(get_display_kind("identifier", "class_declaration"), "class");
-        assert_eq!(get_display_kind("identifier", "interface_declaration"), "interface");
-        assert_eq!(get_display_kind("identifier", "variable_declarator"), "variable");
-        assert_eq!(get_display_kind("identifier", "method_definition"), "method");
+        assert_eq!(
+            get_display_kind("identifier", "interface_declaration"),
+            "interface"
+        );
+        assert_eq!(
+            get_display_kind("identifier", "variable_declarator"),
+            "variable"
+        );
+        assert_eq!(
+            get_display_kind("identifier", "method_definition"),
+            "method"
+        );
         assert_eq!(get_display_kind("identifier", "unknown"), "identifier");
     }
 
@@ -305,14 +323,26 @@ function greet() { }
 
     #[test]
     fn test_get_display_kind_declarations() {
-        assert_eq!(get_display_kind("function_declaration", "any"), "function declaration");
-        assert_eq!(get_display_kind("class_declaration", "any"), "class declaration");
-        assert_eq!(get_display_kind("interface_declaration", "any"), "interface declaration");
+        assert_eq!(
+            get_display_kind("function_declaration", "any"),
+            "function declaration"
+        );
+        assert_eq!(
+            get_display_kind("class_declaration", "any"),
+            "class declaration"
+        );
+        assert_eq!(
+            get_display_kind("interface_declaration", "any"),
+            "interface declaration"
+        );
     }
 
     #[test]
     fn test_get_display_kind_unknown() {
-        assert_eq!(get_display_kind("some_unknown_node", "any"), "some unknown node");
+        assert_eq!(
+            get_display_kind("some_unknown_node", "any"),
+            "some unknown node"
+        );
     }
 
     #[test]
