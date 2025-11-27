@@ -93,9 +93,11 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: lcov.info
           flags: rust
           fail_ci_if_error: false
+          verbose: true
 
   typescript-test:
     name: TypeScript Tests
@@ -202,7 +204,7 @@ jobs:
             ${{ runner.os }}-cargo-bench-
 
       - name: Run benchmarks
-        run: cargo bench --no-fail-fast -- --noplot
+        run: cargo bench --bench parsing --bench analysis -- --noplot
 
       - name: Store benchmark results
         uses: actions/upload-artifact@v5

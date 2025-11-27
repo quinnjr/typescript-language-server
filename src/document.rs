@@ -79,6 +79,7 @@ impl Document {
     }
 
     /// Convert byte offset to LSP position
+    #[allow(dead_code)] // Reserved for future incremental parsing
     pub fn position_at_offset(&self, offset: usize) -> tower_lsp::lsp_types::Position {
         let mut line = 0;
         let mut col = 0;

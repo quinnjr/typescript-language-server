@@ -1,3 +1,8 @@
+//! tsconfig.json parsing and handling
+//! Reserved for project configuration features
+
+#![allow(dead_code)]
+
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::path::Path;
@@ -5,6 +10,7 @@ use std::path::Path;
 /// Represents a tsconfig.json file
 #[derive(Debug, Clone, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
+#[allow(dead_code)] // Fields used for deserialization and future features
 pub struct TsConfig {
     pub compiler_options: Option<CompilerOptions>,
     pub include: Option<Vec<String>>,
@@ -65,6 +71,7 @@ pub struct ProjectReference {
 
 impl TsConfig {
     /// Load a tsconfig.json file
+    #[allow(dead_code)] // Reserved for project system integration
     pub fn load(path: &Path) -> Result<Self, TsConfigError> {
         let content =
             std::fs::read_to_string(path).map_err(|e| TsConfigError::IoError(e.to_string()))?;
@@ -218,7 +225,7 @@ fn remove_json_comments(input: &str) -> String {
                     if chars.peek() == Some(&'/') {
                         // Line comment - skip until end of line
                         chars.next();
-                        while let Some(c) = chars.next() {
+                        for c in chars.by_ref() {
                             if c == '\n' {
                                 result.push('\n');
                                 break;

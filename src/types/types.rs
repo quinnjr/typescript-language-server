@@ -1,3 +1,8 @@
+//! Type system representations
+//! Reserved for full type checking implementation
+
+#![allow(dead_code)]
+
 use std::collections::HashMap;
 
 /// Unique identifier for a type
@@ -229,7 +234,7 @@ impl Type {
 }
 
 /// Object type (interface, class, etc.)
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct ObjectType {
     /// Properties of the object
     pub properties: HashMap<String, Property>,
@@ -239,17 +244,6 @@ pub struct ObjectType {
     pub call_signatures: Vec<FunctionType>,
     /// Constructor signatures (for newable objects)
     pub construct_signatures: Vec<FunctionType>,
-}
-
-impl Default for ObjectType {
-    fn default() -> Self {
-        Self {
-            properties: HashMap::new(),
-            index_signatures: Vec::new(),
-            call_signatures: Vec::new(),
-            construct_signatures: Vec::new(),
-        }
-    }
 }
 
 /// Property of an object type
@@ -278,6 +272,7 @@ pub struct IndexSignature {
 
 /// Function type
 #[derive(Debug, Clone)]
+#[allow(dead_code)] // Fields used for type representation
 pub struct FunctionType {
     /// Type parameters
     pub type_parameters: Vec<TypeParameter>,

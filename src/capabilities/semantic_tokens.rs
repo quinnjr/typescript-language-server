@@ -236,12 +236,14 @@ mod tests {
 
     #[test]
     fn test_token_types_count() {
-        assert!(!TOKEN_TYPES.is_empty());
+        // TOKEN_TYPES should have all standard semantic token types
         assert!(TOKEN_TYPES.len() > 10);
+        assert!(TOKEN_TYPES.len() <= 30); // Reasonable upper bound
     }
 
     #[test]
     fn test_token_modifiers_count() {
+        // TOKEN_MODIFIERS should have standard modifiers
         assert!(!TOKEN_MODIFIERS.is_empty());
     }
 
@@ -401,9 +403,13 @@ mod tests {
         let tree = parse_typescript(code);
         let tokens = get_semantic_tokens(&tree, code);
 
-        // All delta_line values should be valid (0 or positive)
-        for token in &tokens {
-            assert!(token.delta_line == 0 || token.delta_line > 0);
+        // Delta encoding should produce reasonable values
+        // (delta_line is u32, so always >= 0)
+        for (i, token) in tokens.iter().enumerate() {
+            // First token can have any delta_line, subsequent should be small
+            if i > 0 {
+                assert!(token.delta_line < 1000, "delta_line should be reasonable");
+            }
         }
     }
 

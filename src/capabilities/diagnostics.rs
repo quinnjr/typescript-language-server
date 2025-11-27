@@ -146,7 +146,7 @@ mod tests {
         let tree = parse_typescript(code);
         let diagnostics = get_syntax_diagnostics(&tree, code);
         // Should detect at least one error
-        assert!(diagnostics.len() >= 1 || tree.root_node().has_error());
+        assert!(!diagnostics.is_empty() || tree.root_node().has_error());
     }
 
     #[test]

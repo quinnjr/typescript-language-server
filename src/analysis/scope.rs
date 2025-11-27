@@ -1,3 +1,8 @@
+//! Scope definitions for lexical analysis
+//! Some fields/methods are reserved for future features
+
+#![allow(dead_code)]
+
 use std::collections::HashMap;
 
 use tower_lsp::lsp_types::Range;

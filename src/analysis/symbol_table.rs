@@ -1,3 +1,8 @@
+//! Symbol table for storing symbols and scopes
+//! Some methods are reserved for future type checking features
+
+#![allow(dead_code)]
+
 use std::collections::HashMap;
 
 use tower_lsp::lsp_types::{Position, Range};
@@ -106,6 +111,7 @@ impl SymbolTable {
     }
 
     /// Get a mutable symbol by id
+    #[allow(dead_code)] // Reserved for future type checking features
     pub fn get_symbol_mut(&mut self, id: SymbolId) -> Option<&mut Symbol> {
         self.symbols.get_mut(&id)
     }
@@ -116,6 +122,7 @@ impl SymbolTable {
     }
 
     /// Get a mutable scope by id
+    #[allow(dead_code)] // Reserved for future scope manipulation
     pub fn get_scope_mut(&mut self, id: u32) -> Option<&mut Scope> {
         self.scopes.get_mut(&id)
     }
@@ -209,6 +216,7 @@ impl SymbolTable {
     }
 
     /// Find the definition of a symbol at a given position
+    #[allow(dead_code)] // Reserved for future go-to-definition enhancements
     pub fn find_definition(&self, pos: Position) -> Option<&Symbol> {
         // First check if we're on a symbol's name
         if let Some(symbol_id) = self.symbol_at_position(pos) {
