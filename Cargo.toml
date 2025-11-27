@@ -2,6 +2,16 @@
 name = "typescript-language-server"
 version = "0.1.0"
 edition = "2024"
+authors = ["Joseph R. Quinn"]
+description = "A high-performance TypeScript and JavaScript language server implemented in Rust"
+license = "MIT"
+repository = "https://github.com/quinnjr/typescript-language-server"
+homepage = "https://github.com/quinnjr/typescript-language-server"
+documentation = "https://docs.rs/typescript-language-server"
+readme = "README.md"
+keywords = ["typescript", "javascript", "lsp", "language-server", "ide"]
+categories = ["development-tools", "text-editors"]
+rust-version = "1.85"
 
 [dependencies]
 tower-lsp = "0.20"
