@@ -55,6 +55,11 @@
           ],
           "default": "off",
           "description": "Traces the communication between VS Code and the language server."
+        },
+        "tsLspRust.autoUpdate": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically check for and notify about server updates."
         }
       }
     },
@@ -62,6 +67,16 @@
       {
         "command": "tsLspRust.restartServer",
         "title": "Restart Language Server",
+        "category": "TypeScript LSP (Rust)"
+      },
+      {
+        "command": "tsLspRust.downloadServer",
+        "title": "Download Language Server",
+        "category": "TypeScript LSP (Rust)"
+      },
+      {
+        "command": "tsLspRust.checkForUpdates",
+        "title": "Check for Server Updates",
         "category": "TypeScript LSP (Rust)"
       }
     ]

@@ -7,6 +7,13 @@ import {
   ServerOptions,
   TransportKind,
 } from "vscode-languageclient/node";
+import {
+  checkForUpdates,
+  downloadServer,
+  getLatestVersion,
+  getServerExecutablePath,
+  isServerDownloaded,
+} from "./server-download.mjs";
 
 let client: LanguageClient | undefined;
 let outputChannel: vscode.OutputChannel;
@@ -19,11 +26,41 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   context.subscriptions.push(
     vscode.commands.registerCommand("tsLspRust.restartServer", async () => {
       await restartServer(context);
+    }),
+    vscode.commands.registerCommand("tsLspRust.downloadServer", async () => {
+      await downloadLatestServer(context);
+    }),
+    vscode.commands.registerCommand("tsLspRust.checkForUpdates", async () => {
+      await checkForUpdates(context, outputChannel);
     })
   );
 
   // Start the language server
   await startServer(context);
+
+  // Check for updates in the background
+  setTimeout(() => {
+    checkForUpdates(context, outputChannel);
+  }, 5000);
+}
+
+async function downloadLatestServer(context: vscode.ExtensionContext): Promise<void> {
+  try {
+    const version = await getLatestVersion();
+    await downloadServer(context, version, outputChannel);
+    
+    const restart = await vscode.window.showInformationMessage(
+      "Server downloaded successfully. Restart the language server?",
+      "Restart",
+      "Later"
+    );
+    
+    if (restart === "Restart") {
+      await restartServer(context);
+    }
+  } catch (error) {
+    vscode.window.showErrorMessage(`Failed to download server: ${error}`);
+  }
 }
 
 async function startServer(context: vscode.ExtensionContext): Promise<void> {
@@ -36,12 +73,34 @@ async function startServer(context: vscode.ExtensionContext): Promise<void> {
   }
 
   // Get server path from configuration or find it automatically
-  const serverPath = await resolveServerPath(context, config);
+  let serverPath = await resolveServerPath(context, config);
+
+  // If no server found, offer to download
+  if (!serverPath) {
+    const download = await vscode.window.showWarningMessage(
+      "TypeScript/JavaScript LSP (Rust): Language server not found. Would you like to download it?",
+      "Download",
+      "Configure Path",
+      "Cancel"
+    );
+
+    if (download === "Download") {
+      try {
+        const version = await getLatestVersion();
+        serverPath = await downloadServer(context, version, outputChannel);
+      } catch (error) {
+        vscode.window.showErrorMessage(`Failed to download server: ${error}`);
+        return;
+      }
+    } else if (download === "Configure Path") {
+      vscode.commands.executeCommand("workbench.action.openSettings", "tsLspRust.serverPath");
+      return;
+    } else {
+      return;
+    }
+  }
 
   if (!serverPath) {
-    const message = "TypeScript/JavaScript LSP (Rust): Could not find language server. Please set tsLspRust.serverPath in settings.";
-    outputChannel.appendLine(message);
-    vscode.window.showErrorMessage(message);
     return;
   }
 
@@ -132,7 +191,15 @@ async function resolveServerPath(
     return configuredPath;
   }
 
-  // 2. Check for bundled server in extension
+  // 2. Check for downloaded server in extension storage
+  if (isServerDownloaded(context)) {
+    const downloadedPath = getServerExecutablePath(context);
+    if (fs.existsSync(downloadedPath)) {
+      return downloadedPath;
+    }
+  }
+
+  // 3. Check for bundled server in extension
   const bundledPaths = [
     path.join(context.extensionPath, "server", "typescript-language-server"),
     path.join(context.extensionPath, "server", "typescript-language-server.exe"),
@@ -144,7 +211,7 @@ async function resolveServerPath(
     }
   }
 
-  // 3. Check workspace's target directory (development mode)
+  // 4. Check workspace's target directory (development mode)
   const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
   if (workspaceRoot) {
     const devPaths = [
@@ -155,6 +222,11 @@ async function resolveServerPath(
       // Windows variants
       path.join(workspaceRoot, "..", "..", "target", "release", "typescript-language-server.exe"),
       path.join(workspaceRoot, "..", "..", "target", "debug", "typescript-language-server.exe"),
+      // Direct workspace paths
+      path.join(workspaceRoot, "target", "release", "typescript-language-server"),
+      path.join(workspaceRoot, "target", "debug", "typescript-language-server"),
+      path.join(workspaceRoot, "target", "release", "typescript-language-server.exe"),
+      path.join(workspaceRoot, "target", "debug", "typescript-language-server.exe"),
     ];
 
     for (const devPath of devPaths) {
@@ -165,7 +237,7 @@ async function resolveServerPath(
     }
   }
 
-  // 4. Check if server is in PATH
+  // 5. Check if server is in PATH
   const serverName = process.platform === "win32" 
     ? "typescript-language-server.exe" 
     : "typescript-language-server";
