@@ -1,0 +1,17 @@
+{
+  "name": "lsp-benchmarks",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Benchmark scripts for comparing TypeScript language servers",
+  "scripts": {
+    "bench": "node benchmark-lsp.mjs",
+    "bench:rust": "node benchmark-lsp.mjs --server rust",
+    "bench:tsserver": "node benchmark-lsp.mjs --server tsserver",
+    "generate": "node generate-fixtures.mjs"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1",
+    "vscode-languageserver-protocol": "^3.17.5"
+  }
+}
+

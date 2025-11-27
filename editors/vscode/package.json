@@ -1,0 +1,64 @@
+{
+  "name": "ts-lsp-rust",
+  "displayName": "TypeScript/JavaScript LSP (Rust)",
+  "description": "A TypeScript and JavaScript language server implemented in Rust",
+  "version": "0.1.0",
+  "publisher": "typescript-lsp-rust",
+  "type": "module",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:typescript",
+    "onLanguage:typescriptreact",
+    "onLanguage:javascript",
+    "onLanguage:javascriptreact"
+  ],
+  "main": "./out/extension.mjs",
+  "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "TypeScript/JavaScript LSP (Rust)",
+      "properties": {
+        "tsLspRust.serverPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the typescript-language-server executable. If empty, uses the bundled server."
+        },
+        "tsLspRust.trace.server": {
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "Traces the communication between VS Code and the language server."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "pnpm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package --no-dependencies",
+    "lint": "eslint src --ext ts",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.75.0",
+    "@vitest/coverage-v8": "^2.0.0",
+    "@vscode/vsce": "^2.22.0",
+    "typescript": "^5.3.0",
+    "vitest": "^2.0.0"
+  }
+}
