@@ -1,0 +1,78 @@
+---
+description: Always create new branches for out-of-scope work
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+# Branch Scope Policy
+
+**Always create a new feature branch when work diverges from the current branch's original purpose.**
+
+## Rule
+
+If asked to perform work that is NOT directly related to the current branch's stated purpose:
+
+1. **Stop and acknowledge** the scope change
+2. **Create a new feature branch** from `develop` (or appropriate base)
+3. **Continue work** on the new branch
+
+## Examples
+
+### Current branch: `feature/add-completions`
+
+✅ **In scope** (continue on current branch):
+- Adding completion triggers
+- Fixing completion bugs
+- Adding completion tests
+
+❌ **Out of scope** (create new branch):
+- Fixing unrelated clippy warnings → `feature/fix-clippy-warnings`
+- Adding new LSP feature → `feature/add-hover-info`
+- Updating CI configuration → `chore/update-ci`
+- Fixing unrelated bug → `bugfix/fix-parser-crash`
+
+### Workflow
+
+```bash
+# When out-of-scope work is needed:
+
+# 1. Commit or stash current work
+git stash  # or git commit
+
+# 2. Switch to develop
+git checkout develop
+
+# 3. Create new branch with appropriate prefix
+git checkout -b feature/new-task-description
+# or
+git checkout -b bugfix/issue-description
+# or
+git checkout -b chore/maintenance-task
+
+# 4. Do the work
+
+# 5. Return to original branch if needed
+git checkout feature/original-branch
+git stash pop  # if stashed
+```
+
+## Branch Prefixes
+
+| Prefix | Use Case |
+|--------|----------|
+| `feature/` | New functionality |
+| `bugfix/` | Bug fixes |
+| `hotfix/` | Urgent production fixes |
+| `chore/` | Maintenance, deps, config |
+| `docs/` | Documentation only |
+| `refactor/` | Code restructuring |
+| `test/` | Test additions/fixes |
+
+## Rationale
+
+- Keeps PRs focused and reviewable
+- Maintains clear git history
+- Enables parallel work streams
+- Follows git-flow methodology
+- Makes reverting changes easier
