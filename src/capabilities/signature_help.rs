@@ -48,16 +48,20 @@ pub fn get_signature_help(
 
     if let Some(symbol_id) = symbol_table.lookup(function_base, scope_id) {
         if let Some(symbol) = symbol_table.get_symbol(symbol_id) {
-            if symbol.flags.intersects(SymbolFlags::FUNCTION | SymbolFlags::METHOD) {
+            if symbol
+                .flags
+                .intersects(SymbolFlags::FUNCTION | SymbolFlags::METHOD)
+            {
                 let args_node = call_node.child_by_field_name("arguments")?;
                 let active_param = count_args_before_position(&args_node, position);
 
                 return Some(SignatureHelp {
                     signatures: vec![SignatureInformation {
                         label: format!("{}()", symbol.name),
-                        documentation: symbol.documentation.clone().map(|d| {
-                            tower_lsp::lsp_types::Documentation::String(d)
-                        }),
+                        documentation: symbol
+                            .documentation
+                            .clone()
+                            .map(|d| tower_lsp::lsp_types::Documentation::String(d)),
                         parameters: None, // Would need function signature analysis
                         active_parameter: Some(active_param as u32),
                     }],
@@ -391,4 +395,3 @@ mod tests {
         // Just ensure the function exists and has the right signature
     }
 }
-

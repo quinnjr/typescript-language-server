@@ -7,4 +7,3 @@ pub use binder::Binder;
 pub use scope::{Scope, ScopeKind};
 pub use symbol::{Symbol, SymbolFlags, SymbolId};
 pub use symbol_table::SymbolTable;
-

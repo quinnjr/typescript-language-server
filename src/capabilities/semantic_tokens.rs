@@ -57,7 +57,13 @@ pub fn get_semantic_tokens(tree: &Tree, source: &str) -> Vec<SemanticToken> {
     let mut prev_line = 0u32;
     let mut prev_start = 0u32;
 
-    collect_tokens(tree.root_node(), source, &mut tokens, &mut prev_line, &mut prev_start);
+    collect_tokens(
+        tree.root_node(),
+        source,
+        &mut tokens,
+        &mut prev_line,
+        &mut prev_start,
+    );
 
     tokens
 }

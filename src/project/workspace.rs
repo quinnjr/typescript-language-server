@@ -132,4 +132,3 @@ fn find_tsconfig_files(root: &Path) -> Vec<PathBuf> {
 
     configs
 }
-

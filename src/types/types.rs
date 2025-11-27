@@ -411,9 +411,15 @@ mod tests {
 
     #[test]
     fn test_type_literal_flags() {
-        assert_eq!(Type::StringLiteral("hello".to_string()).flags(), TypeFlags::STRING_LITERAL);
+        assert_eq!(
+            Type::StringLiteral("hello".to_string()).flags(),
+            TypeFlags::STRING_LITERAL
+        );
         assert_eq!(Type::NumberLiteral(42.0).flags(), TypeFlags::NUMBER_LITERAL);
-        assert_eq!(Type::BooleanLiteral(true).flags(), TypeFlags::BOOLEAN_LITERAL);
+        assert_eq!(
+            Type::BooleanLiteral(true).flags(),
+            TypeFlags::BOOLEAN_LITERAL
+        );
     }
 
     #[test]

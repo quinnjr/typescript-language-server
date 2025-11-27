@@ -1,8 +1,8 @@
+use std::collections::HashMap;
 use tower_lsp::lsp_types::{
     CodeAction, CodeActionKind, CodeActionOrCommand, Diagnostic, Position, Range, TextEdit, Url,
     WorkspaceEdit,
 };
-use std::collections::HashMap;
 
 use crate::analysis::SymbolTable;
 
@@ -45,15 +45,28 @@ fn get_diagnostic_fixes(
                 // Undefined variable - offer to declare it
                 let var_name = extract_name_from_message(&diagnostic.message);
                 if let Some(name) = var_name {
-                    actions.push(create_declare_variable_action(uri, &diagnostic.range, &name));
+                    actions.push(create_declare_variable_action(
+                        uri,
+                        &diagnostic.range,
+                        &name,
+                    ));
                 }
             }
             tower_lsp::lsp_types::NumberOrString::Number(6133) => {
                 // Unused variable - offer to prefix with underscore
                 let var_name = extract_name_from_message(&diagnostic.message);
                 if let Some(name) = var_name {
-                    actions.push(create_prefix_underscore_action(uri, &diagnostic.range, &name));
-                    actions.push(create_remove_unused_action(uri, &diagnostic.range, source, &name));
+                    actions.push(create_prefix_underscore_action(
+                        uri,
+                        &diagnostic.range,
+                        &name,
+                    ));
+                    actions.push(create_remove_unused_action(
+                        uri,
+                        &diagnostic.range,
+                        source,
+                        &name,
+                    ));
                 }
             }
             tower_lsp::lsp_types::NumberOrString::Number(2588) => {
@@ -258,7 +271,12 @@ fn create_prefix_underscore_action(uri: &Url, range: &Range, name: &str) -> Code
     })
 }
 
-fn create_remove_unused_action(uri: &Url, range: &Range, source: &str, _name: &str) -> CodeActionOrCommand {
+fn create_remove_unused_action(
+    uri: &Url,
+    range: &Range,
+    source: &str,
+    _name: &str,
+) -> CodeActionOrCommand {
     // Find the full declaration to remove
     let lines: Vec<&str> = source.lines().collect();
     let line_idx = range.start.line as usize;
@@ -417,7 +435,11 @@ fn create_extract_function_action(uri: &Url, range: Range, text: &str) -> CodeAc
                     start: Position::new(range.start.line, 0),
                     end: Position::new(range.start.line, 0),
                 },
-                new_text: format!("function {}() {{\n  return {};\n}}\n\n", fn_name, text.trim()),
+                new_text: format!(
+                    "function {}() {{\n  return {};\n}}\n\n",
+                    fn_name,
+                    text.trim()
+                ),
             },
             // Replace the selection with the function call
             TextEdit {
@@ -445,9 +467,7 @@ fn create_extract_function_action(uri: &Url, range: Range, text: &str) -> CodeAc
 
 fn create_convert_to_arrow_action(uri: &Url, range: Range, text: &str) -> CodeActionOrCommand {
     // Simple conversion - a real implementation would parse the function
-    let arrow_fn = text
-        .replace("function ", "const f = ")
-        .replace(")", ") =>");
+    let arrow_fn = text.replace("function ", "const f = ").replace(")", ") =>");
 
     let mut changes = HashMap::new();
     changes.insert(
@@ -571,4 +591,3 @@ mod tests {
         assert!(text.contains("line2"));
     }
 }
-

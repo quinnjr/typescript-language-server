@@ -176,7 +176,10 @@ mod tests {
         assert_eq!(SourceLanguage::from_uri(&uri), SourceLanguage::TypeScript);
 
         let uri = Url::parse("file:///path/to/file.tsx").unwrap();
-        assert_eq!(SourceLanguage::from_uri(&uri), SourceLanguage::TypeScriptReact);
+        assert_eq!(
+            SourceLanguage::from_uri(&uri),
+            SourceLanguage::TypeScriptReact
+        );
 
         let uri = Url::parse("file:///path/to/file.js").unwrap();
         assert_eq!(SourceLanguage::from_uri(&uri), SourceLanguage::JavaScript);

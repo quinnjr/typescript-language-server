@@ -1,4 +1,4 @@
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
+use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
 use tree_sitter::Parser;
 
 // We need to make the analysis module accessible from benches
@@ -123,7 +123,10 @@ fn bench_symbol_extraction(c: &mut Criterion) {
         let tree = parser.parse(&code, None).unwrap();
 
         group.bench_with_input(
-            BenchmarkId::new("declarations", format!("depth={},siblings={}", depth, siblings)),
+            BenchmarkId::new(
+                "declarations",
+                format!("depth={},siblings={}", depth, siblings),
+            ),
             &(&tree, &code),
             |b, (tree, source)| {
                 b.iter(|| {
@@ -134,7 +137,10 @@ fn bench_symbol_extraction(c: &mut Criterion) {
         );
 
         group.bench_with_input(
-            BenchmarkId::new("identifiers", format!("depth={},siblings={}", depth, siblings)),
+            BenchmarkId::new(
+                "identifiers",
+                format!("depth={},siblings={}", depth, siblings),
+            ),
             &tree,
             |b, tree| {
                 b.iter(|| {
@@ -171,9 +177,14 @@ fn bench_scope_building(c: &mut Criterion) {
 
                 // Track scope-creating nodes
                 match node.kind() {
-                    "function_declaration" | "arrow_function" | "method_definition"
-                    | "class_declaration" | "statement_block" | "if_statement"
-                    | "for_statement" | "while_statement" => {
+                    "function_declaration"
+                    | "arrow_function"
+                    | "method_definition"
+                    | "class_declaration"
+                    | "statement_block"
+                    | "if_statement"
+                    | "for_statement"
+                    | "while_statement" => {
                         current_depth += 1;
                         max_depth = max_depth.max(current_depth);
                     }
@@ -188,9 +199,14 @@ fn bench_scope_building(c: &mut Criterion) {
                     // Leaving scope
                     let leaving = cursor.node();
                     match leaving.kind() {
-                        "function_declaration" | "arrow_function" | "method_definition"
-                        | "class_declaration" | "statement_block" | "if_statement"
-                        | "for_statement" | "while_statement" => {
+                        "function_declaration"
+                        | "arrow_function"
+                        | "method_definition"
+                        | "class_declaration"
+                        | "statement_block"
+                        | "if_statement"
+                        | "for_statement"
+                        | "while_statement" => {
                             current_depth = current_depth.saturating_sub(1);
                         }
                         _ => {}
@@ -209,4 +225,3 @@ fn bench_scope_building(c: &mut Criterion) {
 
 criterion_group!(benches, bench_symbol_extraction, bench_scope_building);
 criterion_main!(benches);
-

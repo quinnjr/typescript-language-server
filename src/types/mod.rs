@@ -4,4 +4,3 @@ pub mod types;
 
 pub use checker::TypeChecker;
 pub use types::{Type, TypeFlags, TypeId};
-

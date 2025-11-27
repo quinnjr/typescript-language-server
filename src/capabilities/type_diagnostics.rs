@@ -1,4 +1,6 @@
-use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, DiagnosticTag, NumberOrString, Position, Range};
+use tower_lsp::lsp_types::{
+    Diagnostic, DiagnosticSeverity, DiagnosticTag, NumberOrString, Position, Range,
+};
 use tree_sitter::{Node, Tree};
 
 use crate::analysis::{SymbolFlags, SymbolTable};
@@ -29,7 +31,10 @@ impl TypeDiagnosticCode {
                 format!("Cannot find name '{}'.", context)
             }
             TypeDiagnosticCode::UndefinedType => {
-                format!("Cannot find name '{}'. Did you mean '{}'?", context, context)
+                format!(
+                    "Cannot find name '{}'. Did you mean '{}'?",
+                    context, context
+                )
             }
             TypeDiagnosticCode::TypeMismatch => {
                 format!("Type '{}' is not assignable.", context)
@@ -50,7 +55,10 @@ impl TypeDiagnosticCode {
                 format!("Expected {} arguments, but got more.", context)
             }
             TypeDiagnosticCode::NotCallable => {
-                format!("This expression is not callable. Type '{}' has no call signatures.", context)
+                format!(
+                    "This expression is not callable. Type '{}' has no call signatures.",
+                    context
+                )
             }
             TypeDiagnosticCode::NoImplicitAny => {
                 format!("Parameter '{}' implicitly has an 'any' type.", context)
@@ -130,7 +138,9 @@ fn check_node_references(
                 diagnostics.push(Diagnostic {
                     range,
                     severity: Some(DiagnosticSeverity::ERROR),
-                    code: Some(NumberOrString::Number(TypeDiagnosticCode::UndefinedVariable.as_number())),
+                    code: Some(NumberOrString::Number(
+                        TypeDiagnosticCode::UndefinedVariable.as_number(),
+                    )),
                     code_description: None,
                     source: Some("ts-lsp-rust".to_string()),
                     message: TypeDiagnosticCode::UndefinedVariable.message(name),
@@ -158,12 +168,17 @@ fn is_reference_identifier(node: &Node) -> bool {
                 // Check if this is the name (declaration) or the value (reference)
                 parent.child_by_field_name("name") != Some(*node)
             }
-            "function_declaration" | "class_declaration" | "interface_declaration"
-            | "type_alias_declaration" | "enum_declaration" | "method_definition" => {
-                parent.child_by_field_name("name") != Some(*node)
-            }
-            "import_specifier" | "shorthand_property_identifier_pattern"
-            | "required_parameter" | "optional_parameter" | "rest_parameter" => false,
+            "function_declaration"
+            | "class_declaration"
+            | "interface_declaration"
+            | "type_alias_declaration"
+            | "enum_declaration"
+            | "method_definition" => parent.child_by_field_name("name") != Some(*node),
+            "import_specifier"
+            | "shorthand_property_identifier_pattern"
+            | "required_parameter"
+            | "optional_parameter"
+            | "rest_parameter" => false,
             "property_signature" | "public_field_definition" => {
                 parent.child_by_field_name("name") != Some(*node)
             }
@@ -179,7 +194,10 @@ fn is_reference_identifier(node: &Node) -> bool {
 fn check_unused_variables(symbol_table: &SymbolTable, diagnostics: &mut Vec<Diagnostic>) {
     for symbol in symbol_table.all_symbols() {
         // Skip if not a variable or parameter
-        if !symbol.flags.intersects(SymbolFlags::VARIABLE | SymbolFlags::PARAMETER) {
+        if !symbol
+            .flags
+            .intersects(SymbolFlags::VARIABLE | SymbolFlags::PARAMETER)
+        {
             continue;
         }
 
@@ -447,7 +465,10 @@ mod tests {
 
         // Should not report x as undefined
         assert!(!diagnostics.iter().any(|d| {
-            d.code == Some(NumberOrString::Number(TypeDiagnosticCode::UndefinedVariable.as_number()))
+            d.code
+                == Some(NumberOrString::Number(
+                    TypeDiagnosticCode::UndefinedVariable.as_number(),
+                ))
                 && d.message.contains("'x'")
         }));
     }
@@ -469,7 +490,10 @@ mod tests {
 
         // Should not report x as unused
         assert!(!diagnostics.iter().any(|d| {
-            d.code == Some(NumberOrString::Number(TypeDiagnosticCode::UnusedVariable.as_number()))
+            d.code
+                == Some(NumberOrString::Number(
+                    TypeDiagnosticCode::UnusedVariable.as_number(),
+                ))
                 && d.message.contains("'x'")
         }));
     }
@@ -491,7 +515,10 @@ mod tests {
         let diagnostics = get_type_diagnostics(&tree, code, &symbol_table);
 
         assert!(diagnostics.iter().any(|d| {
-            d.code == Some(NumberOrString::Number(TypeDiagnosticCode::CannotReassignConst.as_number()))
+            d.code
+                == Some(NumberOrString::Number(
+                    TypeDiagnosticCode::CannotReassignConst.as_number(),
+                ))
         }));
     }
 
@@ -503,7 +530,10 @@ mod tests {
 
         // Should not report reassignment error for let
         assert!(!diagnostics.iter().any(|d| {
-            d.code == Some(NumberOrString::Number(TypeDiagnosticCode::CannotReassignConst.as_number()))
+            d.code
+                == Some(NumberOrString::Number(
+                    TypeDiagnosticCode::CannotReassignConst.as_number(),
+                ))
         }));
     }
 
@@ -524,4 +554,3 @@ mod tests {
         assert_eq!(TypeDiagnosticCode::CannotReassignConst.as_number(), 2588);
     }
 }
-

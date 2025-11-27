@@ -119,11 +119,7 @@ fn get_variable_type_hint(
 }
 
 /// Infer type from a node
-fn infer_type_from_node(
-    node: &Node,
-    source: &str,
-    _symbol_table: &SymbolTable,
-) -> Option<String> {
+fn infer_type_from_node(node: &Node, source: &str, _symbol_table: &SymbolTable) -> Option<String> {
     match node.kind() {
         "string" | "template_string" => Some("string".to_string()),
         "number" => Some("number".to_string()),
@@ -172,7 +168,8 @@ fn infer_type_from_node(
         }
         "binary_expression" => {
             // Get the operator
-            let op_text = node.child(1)
+            let op_text = node
+                .child(1)
                 .and_then(|op| op.utf8_text(source.as_bytes()).ok())?;
 
             match op_text {
@@ -185,7 +182,9 @@ fn infer_type_from_node(
                         let left_type = infer_type_from_node(&left, source, _symbol_table);
                         let right_type = infer_type_from_node(&right, source, _symbol_table);
 
-                        if left_type.as_deref() == Some("string") || right_type.as_deref() == Some("string") {
+                        if left_type.as_deref() == Some("string")
+                            || right_type.as_deref() == Some("string")
+                        {
                             return Some("string".to_string());
                         }
                     }
@@ -404,4 +403,3 @@ mod tests {
         // Just ensuring the function signature is correct
     }
 }
-

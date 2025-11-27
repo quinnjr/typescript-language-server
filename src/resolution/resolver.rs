@@ -78,10 +78,8 @@ impl ModuleResolver {
 
             // Set path mappings
             if let Some(ref paths) = compiler_options.paths {
-                resolver.path_mappings = paths
-                    .iter()
-                    .map(|(k, v)| (k.clone(), v.clone()))
-                    .collect();
+                resolver.path_mappings =
+                    paths.iter().map(|(k, v)| (k.clone(), v.clone())).collect();
             }
         }
 
@@ -139,22 +137,24 @@ impl ModuleResolver {
     fn resolve_relative(&self, specifier: &str, from_dir: &Path) -> Option<ResolvedModule> {
         let target_path = from_dir.join(specifier);
 
-        self.try_resolve_file(&target_path).map(|path| ResolvedModule {
-            path,
-            is_external: false,
-            specifier: specifier.to_string(),
-        })
+        self.try_resolve_file(&target_path)
+            .map(|path| ResolvedModule {
+                path,
+                is_external: false,
+                specifier: specifier.to_string(),
+            })
     }
 
     /// Resolve from base URL
     fn resolve_from_base_url(&self, specifier: &str, base_url: &Path) -> Option<ResolvedModule> {
         let target_path = base_url.join(specifier);
 
-        self.try_resolve_file(&target_path).map(|path| ResolvedModule {
-            path,
-            is_external: false,
-            specifier: specifier.to_string(),
-        })
+        self.try_resolve_file(&target_path)
+            .map(|path| ResolvedModule {
+                path,
+                is_external: false,
+                specifier: specifier.to_string(),
+            })
     }
 
     /// Resolve from node_modules
@@ -174,7 +174,9 @@ impl ModuleResolver {
         }
 
         // Try adding extensions
-        let extensions = [".ts", ".tsx", ".d.ts", ".js", ".jsx", ".mts", ".mjs", ".cts", ".cjs"];
+        let extensions = [
+            ".ts", ".tsx", ".d.ts", ".js", ".jsx", ".mts", ".mjs", ".cts", ".cjs",
+        ];
 
         for ext in extensions {
             let with_ext = path.with_extension(ext.trim_start_matches('.'));
@@ -232,4 +234,3 @@ impl Default for ModuleResolver {
         Self::new(PathBuf::from("."))
     }
 }
-

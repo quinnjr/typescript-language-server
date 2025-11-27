@@ -55,7 +55,14 @@ impl SymbolTable {
         let id = SymbolId::new(self.next_symbol_id);
         self.next_symbol_id += 1;
 
-        let symbol = Symbol::new(id, name.clone(), flags, declaration_range, name_range, scope_id);
+        let symbol = Symbol::new(
+            id,
+            name.clone(),
+            flags,
+            declaration_range,
+            name_range,
+            scope_id,
+        );
 
         // Add to scope
         if let Some(scope) = self.scopes.get_mut(&scope_id) {
@@ -260,13 +267,7 @@ mod tests {
             end: Position::new(0, 10),
         };
 
-        let id = table.create_symbol(
-            "test".to_string(),
-            SymbolFlags::VARIABLE,
-            range,
-            range,
-            0,
-        );
+        let id = table.create_symbol("test".to_string(), SymbolFlags::VARIABLE, range, range, 0);
 
         let symbol = table.get_symbol(id).unwrap();
         assert_eq!(symbol.name, "test");
@@ -283,13 +284,7 @@ mod tests {
             end: Position::new(0, 10),
         };
 
-        let id = table.create_symbol(
-            "User".to_string(),
-            SymbolFlags::INTERFACE,
-            range,
-            range,
-            0,
-        );
+        let id = table.create_symbol("User".to_string(), SymbolFlags::INTERFACE, range, range, 0);
 
         // Type symbols should be in type_symbols
         let scope = table.get_scope(0).unwrap();
@@ -326,13 +321,7 @@ mod tests {
             end: Position::new(0, 10),
         };
 
-        let id = table.create_symbol(
-            "x".to_string(),
-            SymbolFlags::VARIABLE,
-            range,
-            range,
-            0,
-        );
+        let id = table.create_symbol("x".to_string(), SymbolFlags::VARIABLE, range, range, 0);
 
         assert_eq!(table.lookup("x", 0), Some(id));
         assert_eq!(table.lookup("y", 0), None);
@@ -348,13 +337,7 @@ mod tests {
         };
 
         // Create symbol in root scope
-        let id = table.create_symbol(
-            "x".to_string(),
-            SymbolFlags::VARIABLE,
-            range,
-            range,
-            0,
-        );
+        let id = table.create_symbol("x".to_string(), SymbolFlags::VARIABLE, range, range, 0);
 
         // Create child scope
         let child_scope_id = table.create_scope(ScopeKind::Function, 0, range);
@@ -373,13 +356,7 @@ mod tests {
         };
 
         // Create symbol in root scope
-        let outer_id = table.create_symbol(
-            "x".to_string(),
-            SymbolFlags::VARIABLE,
-            range,
-            range,
-            0,
-        );
+        let outer_id = table.create_symbol("x".to_string(), SymbolFlags::VARIABLE, range, range, 0);
 
         // Create child scope
         let child_scope_id = table.create_scope(ScopeKind::Block, 0, range);
@@ -408,13 +385,7 @@ mod tests {
             end: Position::new(0, 10),
         };
 
-        let id = table.create_symbol(
-            "User".to_string(),
-            SymbolFlags::INTERFACE,
-            range,
-            range,
-            0,
-        );
+        let id = table.create_symbol("User".to_string(), SymbolFlags::INTERFACE, range, range, 0);
 
         assert_eq!(table.lookup_type("User", 0), Some(id));
         assert_eq!(table.lookup_type("Unknown", 0), None);
@@ -477,13 +448,7 @@ mod tests {
             end: Position::new(0, 10),
         };
 
-        let id = table.create_symbol(
-            "x".to_string(),
-            SymbolFlags::VARIABLE,
-            range,
-            range,
-            0,
-        );
+        let id = table.create_symbol("x".to_string(), SymbolFlags::VARIABLE, range, range, 0);
 
         let ref_range = Range {
             start: Position::new(5, 0),

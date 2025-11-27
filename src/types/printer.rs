@@ -223,22 +223,13 @@ mod tests {
 
     #[test]
     fn test_print_bigint_literal() {
-        assert_eq!(
-            print_type(&Type::BigIntLiteral("123".to_string())),
-            "123n"
-        );
+        assert_eq!(print_type(&Type::BigIntLiteral("123".to_string())), "123n");
     }
 
     #[test]
     fn test_print_array() {
-        assert_eq!(
-            print_type(&Type::Array(Box::new(Type::String))),
-            "string[]"
-        );
-        assert_eq!(
-            print_type(&Type::Array(Box::new(Type::Number))),
-            "number[]"
-        );
+        assert_eq!(print_type(&Type::Array(Box::new(Type::String))), "string[]");
+        assert_eq!(print_type(&Type::Array(Box::new(Type::Number))), "number[]");
     }
 
     #[test]
@@ -262,10 +253,7 @@ mod tests {
     fn test_print_intersection() {
         let obj1 = Type::Object(ObjectType::default());
         let obj2 = Type::Object(ObjectType::default());
-        assert_eq!(
-            print_type(&Type::Intersection(vec![obj1, obj2])),
-            "{} & {}"
-        );
+        assert_eq!(print_type(&Type::Intersection(vec![obj1, obj2])), "{} & {}");
     }
 
     #[test]
@@ -455,10 +443,7 @@ mod tests {
             false_type: Box::new(Type::Boolean),
         });
 
-        assert_eq!(
-            print_type(&cond),
-            "T extends string ? number : boolean"
-        );
+        assert_eq!(print_type(&cond), "T extends string ? number : boolean");
     }
 
     #[test]

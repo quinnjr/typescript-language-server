@@ -9,7 +9,7 @@ jobs:
   validate-branch:
     name: Validate Git Flow Branch
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Check branch naming and merge direction
         uses: actions/github-script@v8
@@ -17,10 +17,10 @@ jobs:
           script: |
             const baseBranch = context.payload.pull_request.base.ref;
             const headBranch = context.payload.pull_request.head.ref;
-            
+
             console.log(`Base branch: ${baseBranch}`);
             console.log(`Head branch: ${headBranch}`);
-            
+
             // Define valid branch patterns
             const patterns = {
               feature: /^feature\/.+$/,
@@ -29,13 +29,13 @@ jobs:
               hotfix: /^hotfix\/v?\d+\.\d+\.\d+.*$/,
               develop: /^develop$/,
             };
-            
+
             // Define valid merge directions
             const validMerges = {
               main: ['release', 'hotfix'],
               develop: ['feature', 'bugfix', 'release', 'hotfix'],
             };
-            
+
             // Identify the branch type
             let branchType = null;
             for (const [type, pattern] of Object.entries(patterns)) {
@@ -44,7 +44,7 @@ jobs:
                 break;
               }
             }
-            
+
             // Check if branch follows git-flow naming
             if (!branchType) {
               core.setFailed(
@@ -62,12 +62,12 @@ jobs:
               );
               return;
             }
-            
+
             // Check if merge direction is valid
             const allowedTypes = validMerges[baseBranch];
             if (!allowedTypes || !allowedTypes.includes(branchType)) {
               const validSources = allowedTypes ? allowedTypes.join(', ') : 'none';
-              
+
               let suggestion = '';
               if (branchType === 'feature' || branchType === 'bugfix') {
                 suggestion = `\n\n💡 Tip: ${branchType} branches should be merged into "develop", not "${baseBranch}".`;
@@ -75,14 +75,14 @@ jobs:
                 suggestion = `\n\n💡 Tip: Use a release branch to merge changes from develop to main.\n` +
                   `   Run: git flow release start v<version>`;
               }
-              
+
               core.setFailed(
                 `❌ Invalid merge direction: "${headBranch}" → "${baseBranch}"\n\n` +
                 `The "${baseBranch}" branch only accepts merges from: ${validSources}${suggestion}`
               );
               return;
             }
-            
+
             // Additional checks for release and hotfix branches
             if (branchType === 'release' || branchType === 'hotfix') {
               // Extract version from branch name
@@ -91,7 +91,7 @@ jobs:
                 console.log(`Version: ${versionMatch[1]}`);
               }
             }
-            
+
             console.log(`✅ Valid git-flow merge: ${branchType} → ${baseBranch}`);
 
       - name: Check for direct commits
@@ -103,11 +103,11 @@ jobs:
               repo: context.repo.repo,
               pull_number: context.payload.pull_request.number,
             });
-            
+
             // Check if any commits were made directly to protected branches
             // (This is more of a warning since the PR itself is the proper way)
             console.log(`PR contains ${commits.length} commit(s)`);
-            
+
             // Log commit info for debugging
             for (const commit of commits) {
               console.log(`  • ${commit.sha.substring(0, 7)}: ${commit.commit.message.split('\n')[0]}`);
@@ -116,23 +116,23 @@ jobs:
   validate-pr-title:
     name: Validate PR Title
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Check PR title format
         uses: actions/github-script@v8
         with:
           script: |
             const title = context.payload.pull_request.title;
-            
+
             // Conventional commit pattern for PR titles
             const conventionalPattern = /^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)(\(.+\))?: .+$/;
-            
+
             // Also allow merge commit style titles
             const mergePattern = /^Merge (branch|pull request) .+$/i;
-            
+
             // Allow release/hotfix titles
             const releasePattern = /^(Release|Hotfix) v?\d+\.\d+\.\d+.*$/i;
-            
+
             if (!conventionalPattern.test(title) && !mergePattern.test(title) && !releasePattern.test(title)) {
               core.warning(
                 `⚠️ PR title "${title}" doesn't follow conventional commits format.\n\n` +
