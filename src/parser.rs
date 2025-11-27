@@ -107,6 +107,7 @@ impl Default for SourceParser {
 }
 
 // Keep backwards compatibility alias
+#[allow(dead_code)]
 pub type TsParser = SourceParser;
 
 #[cfg(test)]

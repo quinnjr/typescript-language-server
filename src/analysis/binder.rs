@@ -1,7 +1,7 @@
 use tower_lsp::lsp_types::{Position, Range};
 use tree_sitter::{Node, Tree};
 
-use super::{ScopeKind, SymbolFlags, SymbolId, SymbolTable};
+use super::{ScopeKind, SymbolFlags, SymbolTable};
 
 /// The binder walks the AST and creates symbols and scopes
 pub struct Binder<'a> {

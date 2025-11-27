@@ -219,8 +219,8 @@ impl TypeChecker {
             "string" | "template_string" => {
                 // Remove quotes
                 let value = text
-                    .trim_start_matches(|c| c == '"' || c == '\'' || c == '`')
-                    .trim_end_matches(|c| c == '"' || c == '\'' || c == '`');
+                    .trim_start_matches(['"', '\'', '`'])
+                    .trim_end_matches(['"', '\'', '`']);
                 self.string_literal_type(value.to_string())
             }
             "number" => {

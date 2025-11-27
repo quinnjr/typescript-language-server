@@ -6,7 +6,9 @@ use tree_sitter::{Node, Tree};
 use crate::analysis::{SymbolFlags, SymbolTable};
 
 /// Diagnostic codes for type errors
+/// These match TypeScript's error codes for compatibility
 #[derive(Debug, Clone, Copy)]
+#[allow(dead_code)] // Some variants are for future type checking features
 pub enum TypeDiagnosticCode {
     UndefinedVariable = 2304,
     UndefinedType = 2552,
@@ -105,15 +107,13 @@ fn check_node_references(
     diagnostics: &mut Vec<Diagnostic>,
 ) {
     // Check identifiers that are references (not declarations)
-    if node.kind() == "identifier" {
-        if is_reference_identifier(&node) {
-            let name = node.utf8_text(source.as_bytes()).unwrap_or("");
+    if node.kind() == "identifier" && is_reference_identifier(&node) {
+        let name = node.utf8_text(source.as_bytes()).unwrap_or("");
 
-            // Skip built-in globals
-            if is_builtin_global(name) {
-                return;
-            }
-
+        // Skip built-in globals
+        if is_builtin_global(name) {
+            // Continue to children
+        } else {
             let position = Position::new(
                 node.start_position().row as u32,
                 node.start_position().column as u32,
