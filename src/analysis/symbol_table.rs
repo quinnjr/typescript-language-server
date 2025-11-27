@@ -1,3 +1,8 @@
+//! Symbol table for storing symbols and scopes
+//! Some methods are reserved for future type checking features
+
+#![allow(dead_code)]
+
 use std::collections::HashMap;
 
 use tower_lsp::lsp_types::{Position, Range};

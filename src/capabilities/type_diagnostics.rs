@@ -1,3 +1,8 @@
+//! Type diagnostics implementation
+//! Reserved for full type checking diagnostics
+
+#![allow(dead_code)]
+
 use tower_lsp::lsp_types::{
     Diagnostic, DiagnosticSeverity, DiagnosticTag, NumberOrString, Position, Range,
 };
@@ -8,7 +13,6 @@ use crate::analysis::{SymbolFlags, SymbolTable};
 /// Diagnostic codes for type errors
 /// These match TypeScript's error codes for compatibility
 #[derive(Debug, Clone, Copy)]
-#[allow(dead_code)] // Some variants are for future type checking features
 pub enum TypeDiagnosticCode {
     UndefinedVariable = 2304,
     UndefinedType = 2552,

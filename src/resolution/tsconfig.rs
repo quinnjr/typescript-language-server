@@ -1,3 +1,8 @@
+//! tsconfig.json parsing and handling
+//! Reserved for project configuration features
+
+#![allow(dead_code)]
+
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::path::Path;

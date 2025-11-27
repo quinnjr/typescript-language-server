@@ -1,3 +1,8 @@
+//! Type checker implementation
+//! Reserved for full type checking features
+
+#![allow(dead_code)]
+
 use std::collections::HashMap;
 
 use super::types::{Type, TypeId};

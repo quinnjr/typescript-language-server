@@ -1,3 +1,8 @@
+//! Symbol definitions for the analysis module
+//! Some fields/methods are reserved for future type checking features
+
+#![allow(dead_code)]
+
 use tower_lsp::lsp_types::{Position, Range};
 
 /// Unique identifier for a symbol

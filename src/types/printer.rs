@@ -1,3 +1,8 @@
+//! Type printer for displaying types
+//! Reserved for hover and diagnostic display
+
+#![allow(dead_code)]
+
 use super::types::Type;
 
 /// Print a type as a string

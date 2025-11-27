@@ -32,11 +32,13 @@ impl SourceLanguage {
     }
 
     /// Check if this is a React variant (TSX or JSX)
+    #[allow(dead_code)] // Reserved for JSX-specific handling
     pub fn is_react(&self) -> bool {
         matches!(self, Self::TypeScriptReact | Self::JavaScriptReact)
     }
 
     /// Check if this is a TypeScript variant
+    #[allow(dead_code)] // Reserved for TypeScript-specific handling
     pub fn is_typescript(&self) -> bool {
         matches!(self, Self::TypeScript | Self::TypeScriptReact)
     }
@@ -68,11 +70,13 @@ impl SourceParser {
     }
 
     /// Create a parser based on file URI
+    #[allow(dead_code)] // Reserved for automatic language detection
     pub fn from_uri(uri: &Url) -> Self {
         Self::new(SourceLanguage::from_uri(uri))
     }
 
     /// Get the current language
+    #[allow(dead_code)] // Reserved for language-specific processing
     pub fn language(&self) -> SourceLanguage {
         self.language
     }

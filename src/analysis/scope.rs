@@ -1,3 +1,8 @@
+//! Scope definitions for lexical analysis
+//! Some fields/methods are reserved for future features
+
+#![allow(dead_code)]
+
 use std::collections::HashMap;
 
 use tower_lsp::lsp_types::Range;
@@ -6,7 +11,6 @@ use super::SymbolId;
 
 /// The kind of scope
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[allow(dead_code)] // Some variants are for complete scope tracking
 pub enum ScopeKind {
     /// Global/module scope
     Global,

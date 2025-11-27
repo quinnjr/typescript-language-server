@@ -1,3 +1,8 @@
+//! Type system representations
+//! Reserved for full type checking implementation
+
+#![allow(dead_code)]
+
 use std::collections::HashMap;
 
 /// Unique identifier for a type
