@@ -1,6 +1,6 @@
 ---
 description: Git branching strategy and workflow conventions
-globs: 
+globs:
   - "**/*"
 alwaysApply: true
 ---

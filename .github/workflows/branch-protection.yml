@@ -1,0 +1,149 @@
+name: Branch Protection
+
+on:
+  pull_request:
+    branches: [main, develop]
+    types: [opened, synchronize, reopened, edited]
+
+jobs:
+  validate-branch:
+    name: Validate Git Flow Branch
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check branch naming and merge direction
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const baseBranch = context.payload.pull_request.base.ref;
+            const headBranch = context.payload.pull_request.head.ref;
+            
+            console.log(`Base branch: ${baseBranch}`);
+            console.log(`Head branch: ${headBranch}`);
+            
+            // Define valid branch patterns
+            const patterns = {
+              feature: /^feature\/.+$/,
+              bugfix: /^bugfix\/.+$/,
+              release: /^release\/v?\d+\.\d+\.\d+.*$/,
+              hotfix: /^hotfix\/v?\d+\.\d+\.\d+.*$/,
+              develop: /^develop$/,
+            };
+            
+            // Define valid merge directions
+            const validMerges = {
+              main: ['release', 'hotfix'],
+              develop: ['feature', 'bugfix', 'release', 'hotfix'],
+            };
+            
+            // Identify the branch type
+            let branchType = null;
+            for (const [type, pattern] of Object.entries(patterns)) {
+              if (pattern.test(headBranch)) {
+                branchType = type;
+                break;
+              }
+            }
+            
+            // Check if branch follows git-flow naming
+            if (!branchType) {
+              core.setFailed(
+                `❌ Branch "${headBranch}" does not follow git-flow naming conventions.\n\n` +
+                `Valid branch patterns:\n` +
+                `  • feature/<description>\n` +
+                `  • bugfix/<description>\n` +
+                `  • release/v<version>\n` +
+                `  • hotfix/v<version>\n\n` +
+                `Examples:\n` +
+                `  • feature/add-completions\n` +
+                `  • bugfix/fix-parser-crash\n` +
+                `  • release/v1.0.0\n` +
+                `  • hotfix/v1.0.1`
+              );
+              return;
+            }
+            
+            // Check if merge direction is valid
+            const allowedTypes = validMerges[baseBranch];
+            if (!allowedTypes || !allowedTypes.includes(branchType)) {
+              const validSources = allowedTypes ? allowedTypes.join(', ') : 'none';
+              
+              let suggestion = '';
+              if (branchType === 'feature' || branchType === 'bugfix') {
+                suggestion = `\n\n💡 Tip: ${branchType} branches should be merged into "develop", not "${baseBranch}".`;
+              } else if (branchType === 'develop' && baseBranch === 'main') {
+                suggestion = `\n\n💡 Tip: Use a release branch to merge changes from develop to main.\n` +
+                  `   Run: git flow release start v<version>`;
+              }
+              
+              core.setFailed(
+                `❌ Invalid merge direction: "${headBranch}" → "${baseBranch}"\n\n` +
+                `The "${baseBranch}" branch only accepts merges from: ${validSources}${suggestion}`
+              );
+              return;
+            }
+            
+            // Additional checks for release and hotfix branches
+            if (branchType === 'release' || branchType === 'hotfix') {
+              // Extract version from branch name
+              const versionMatch = headBranch.match(/v?(\d+\.\d+\.\d+.*)/);
+              if (versionMatch) {
+                console.log(`Version: ${versionMatch[1]}`);
+              }
+            }
+            
+            console.log(`✅ Valid git-flow merge: ${branchType} → ${baseBranch}`);
+
+      - name: Check for direct commits
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: commits } = await github.rest.pulls.listCommits({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+            });
+            
+            // Check if any commits were made directly to protected branches
+            // (This is more of a warning since the PR itself is the proper way)
+            console.log(`PR contains ${commits.length} commit(s)`);
+            
+            // Log commit info for debugging
+            for (const commit of commits) {
+              console.log(`  • ${commit.sha.substring(0, 7)}: ${commit.commit.message.split('\n')[0]}`);
+            }
+
+  validate-pr-title:
+    name: Validate PR Title
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check PR title format
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = context.payload.pull_request.title;
+            
+            // Conventional commit pattern for PR titles
+            const conventionalPattern = /^(feat|fix|docs|style|refactor|perf|test|chore|ci|build|revert)(\(.+\))?: .+$/;
+            
+            // Also allow merge commit style titles
+            const mergePattern = /^Merge (branch|pull request) .+$/i;
+            
+            // Allow release/hotfix titles
+            const releasePattern = /^(Release|Hotfix) v?\d+\.\d+\.\d+.*$/i;
+            
+            if (!conventionalPattern.test(title) && !mergePattern.test(title) && !releasePattern.test(title)) {
+              core.warning(
+                `⚠️ PR title "${title}" doesn't follow conventional commits format.\n\n` +
+                `Recommended format: type(scope): description\n\n` +
+                `Types: feat, fix, docs, style, refactor, perf, test, chore, ci, build, revert\n\n` +
+                `Examples:\n` +
+                `  • feat(parser): add JSX support\n` +
+                `  • fix(completions): handle null values\n` +
+                `  • docs: update README`
+              );
+            } else {
+              console.log(`✅ PR title follows conventions: "${title}"`);
+            }
+

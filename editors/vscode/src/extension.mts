@@ -48,13 +48,13 @@ async function downloadLatestServer(context: vscode.ExtensionContext): Promise<v
   try {
     const version = await getLatestVersion();
     await downloadServer(context, version, outputChannel);
-    
+
     const restart = await vscode.window.showInformationMessage(
       "Server downloaded successfully. Restart the language server?",
       "Restart",
       "Later"
     );
-    
+
     if (restart === "Restart") {
       await restartServer(context);
     }
@@ -238,10 +238,10 @@ async function resolveServerPath(
   }
 
   // 5. Check if server is in PATH
-  const serverName = process.platform === "win32" 
-    ? "typescript-language-server.exe" 
+  const serverName = process.platform === "win32"
+    ? "typescript-language-server.exe"
     : "typescript-language-server";
-  
+
   const pathDirs = (process.env.PATH || "").split(path.delimiter);
   for (const dir of pathDirs) {
     const fullPath = path.join(dir, serverName);

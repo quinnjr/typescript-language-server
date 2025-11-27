@@ -278,7 +278,7 @@ export async function downloadServer(
   // Rename extracted binary to standard name
   const binaryName = getPlatformBinaryName();
   const extractedPath = path.join(serverDir, binaryName + (isWindows ? ".exe" : ""));
-  
+
   if (fs.existsSync(extractedPath) && extractedPath !== serverPath) {
     fs.renameSync(extractedPath, serverPath);
   }

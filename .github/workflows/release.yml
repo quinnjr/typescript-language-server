@@ -29,7 +29,7 @@ jobs:
             os: ubuntu-latest
             name: linux-arm64
             cross: true
-          
+
           # macOS
           - target: x86_64-apple-darwin
             os: macos-latest
@@ -37,7 +37,7 @@ jobs:
           - target: aarch64-apple-darwin
             os: macos-latest
             name: darwin-arm64
-          
+
           # Windows
           - target: x86_64-pc-windows-msvc
             os: windows-latest
@@ -100,7 +100,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -113,12 +113,12 @@ jobs:
       - name: Prepare release assets
         run: |
           mkdir -p release
-          
+
           # Move and rename binaries
           for dir in artifacts/typescript-language-server-*; do
             name=$(basename "$dir")
             platform=${name#typescript-language-server-}
-            
+
             if [[ "$platform" == *"win32"* ]]; then
               mv "$dir"/*.exe "release/${name}.exe"
               # Create zip for Windows
@@ -130,7 +130,7 @@ jobs:
               cd release && tar -czf "${name}.tar.gz" "${name}" && rm "${name}" && cd ..
             fi
           done
-          
+
           ls -la release/
 
       - name: Generate checksums
@@ -166,7 +166,7 @@ jobs:
     needs: release
     runs-on: ubuntu-latest
     if: ${{ !contains(github.ref, '-') }}  # Skip for pre-releases
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
