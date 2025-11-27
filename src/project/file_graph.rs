@@ -1,3 +1,8 @@
+//! File dependency graph
+//! Reserved for cross-file analysis features
+
+#![allow(dead_code)]
+
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 

@@ -1,7 +1,7 @@
 use tower_lsp::lsp_types::{Position, Range};
 use tree_sitter::{Node, Tree};
 
-use super::{ScopeKind, SymbolFlags, SymbolId, SymbolTable};
+use super::{ScopeKind, SymbolFlags, SymbolTable};
 
 /// The binder walks the AST and creates symbols and scopes
 pub struct Binder<'a> {
@@ -654,7 +654,8 @@ impl<'a> Binder<'a> {
 
     fn has_child_kind(&self, node: &Node, kind: &str) -> bool {
         let mut cursor = node.walk();
-        node.children(&mut cursor).any(|c| c.kind() == kind)
+        let result = node.children(&mut cursor).any(|c| c.kind() == kind);
+        result
     }
 }
 

@@ -1,3 +1,8 @@
+//! Project management
+//! Reserved for multi-file project features
+
+#![allow(dead_code)]
+
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 

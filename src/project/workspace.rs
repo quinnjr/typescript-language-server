@@ -1,3 +1,8 @@
+//! Workspace management for multi-project setups
+//! Reserved for workspace features
+
+#![allow(dead_code)]
+
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 

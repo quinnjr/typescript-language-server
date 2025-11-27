@@ -1,3 +1,8 @@
+//! Type printer for displaying types
+//! Reserved for hover and diagnostic display
+
+#![allow(dead_code)]
+
 use super::types::Type;
 
 /// Print a type as a string
@@ -212,7 +217,7 @@ mod tests {
     #[test]
     fn test_print_number_literal() {
         assert_eq!(print_type(&Type::NumberLiteral(42.0)), "42");
-        assert_eq!(print_type(&Type::NumberLiteral(3.14)), "3.14");
+        assert_eq!(print_type(&Type::NumberLiteral(1.5)), "1.5");
     }
 
     #[test]

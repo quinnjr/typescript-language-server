@@ -1,3 +1,8 @@
+//! Module resolution implementation
+//! Reserved for cross-file navigation features
+
+#![allow(dead_code)]
+
 use std::path::{Path, PathBuf};
 
 use super::node_modules::resolve_node_module;

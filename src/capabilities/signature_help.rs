@@ -43,7 +43,10 @@ pub fn get_signature_help(
     }
 
     // Try to find the function in the symbol table
-    let function_base = function_name.split('.').last().unwrap_or(function_name);
+    let function_base = function_name
+        .split('.')
+        .next_back()
+        .unwrap_or(function_name);
     let scope_id = symbol_table.scope_at_position(position);
 
     if let Some(symbol_id) = symbol_table.lookup(function_base, scope_id) {
@@ -61,7 +64,7 @@ pub fn get_signature_help(
                         documentation: symbol
                             .documentation
                             .clone()
-                            .map(|d| tower_lsp::lsp_types::Documentation::String(d)),
+                            .map(tower_lsp::lsp_types::Documentation::String),
                         parameters: None, // Would need function signature analysis
                         active_parameter: Some(active_param as u32),
                     }],
@@ -191,7 +194,7 @@ fn get_builtin_signature_help(name: &str) -> Option<SignatureInformation> {
             active_parameter: None,
         }),
         "Math.max" | "Math.min" => Some(SignatureInformation {
-            label: format!("{}(...values: number[]): number", name.split('.').last().unwrap_or(name)),
+            label: format!("{}(...values: number[]): number", name.split('.').next_back().unwrap_or(name)),
             documentation: Some(tower_lsp::lsp_types::Documentation::String(
                 format!("Returns the {} of a set of supplied numeric expressions.", if name.contains("max") { "larger" } else { "smaller" }),
             )),
