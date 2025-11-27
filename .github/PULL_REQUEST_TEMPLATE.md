@@ -27,9 +27,9 @@ Fixes #
 
 <!-- List the specific changes made in this PR -->
 
-- 
-- 
-- 
+-
+-
+-
 
 ## Testing
 
@@ -60,7 +60,7 @@ Fixes #
 <!-- Verify your branch follows git-flow -->
 
 - **Source branch:** `feature/...`, `bugfix/...`, `release/...`, or `hotfix/...`
-- **Target branch:** 
+- **Target branch:**
   - `develop` for features and bugfixes
   - `main` for releases and hotfixes
 
