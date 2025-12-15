@@ -101,7 +101,7 @@
     "vscode-languageclient": "^9.0.1"
   },
   "devDependencies": {
-    "@types/node": "^24.10.1",
+    "@types/node": "^25.0.2",
     "@types/vscode": "^1.75.0",
     "@vitest/coverage-v8": "^4.0.14",
     "@vscode/vsce": "^3.7.1",
