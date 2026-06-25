@@ -9,6 +9,9 @@ jobs:
   validate-branch:
     name: Validate Git Flow Branch
     runs-on: ubuntu-latest
+    # Dependabot uses fixed `dependabot/*` branch names that intentionally do
+    # not follow the git-flow naming convention, so exempt it from this gate.
+    if: github.actor != 'dependabot[bot]'
 
     steps:
       - name: Check branch naming and merge direction
