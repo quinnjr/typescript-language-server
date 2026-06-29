@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Check branch naming and merge direction
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const baseBranch = context.payload.pull_request.base.ref;
@@ -98,7 +98,7 @@ jobs:
             console.log(`✅ Valid git-flow merge: ${branchType} → ${baseBranch}`);
 
       - name: Check for direct commits
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const { data: commits } = await github.rest.pulls.listCommits({
@@ -122,7 +122,7 @@ jobs:
 
     steps:
       - name: Check PR title format
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const title = context.payload.pull_request.title;
