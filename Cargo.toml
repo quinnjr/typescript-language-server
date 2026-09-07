@@ -15,7 +15,7 @@ rust-version = "1.85"
 
 [dependencies]
 tower-lsp = "0.20"
-tree-sitter = "0.26"
+tree-sitter = "0.27"
 tree-sitter-typescript = "0.23"
 tree-sitter-javascript = "0.25"
 tokio = { version = "1", features = ["full"] }
